@@ -1,0 +1,78 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "Python: main.py File",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main.py",
+            "console": "integratedTerminal",
+            "args": [
+                "input.thesis.Eta_Plot.single_arbitrary_eta_02"
+            ]
+        },
+        {
+            "name": "Python: main-nowake.py File",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main-nowake.py",
+            "console": "integratedTerminal",
+            "args": [
+                "input.thesis.Gaussian_profile_test__1D-y"
+            ]
+        },
+        {
+            "name": "Python: index.py File",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/index.py",
+            "console": "integratedTerminal",
+            "args": [
+                "input.36-50__xwid-1__0-002__01",
+                "input.weights__x_0-1__y_0-01"
+            ]
+        },
+        {
+            "name": "Python: index-mp.py File",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/index-mp.py",
+            "console": "integratedTerminal",
+            "args": [
+                "input.thesis.Gaussian_profile_test__2D-xi-y",
+                "input.thesis.Gaussian_profile_test__weights"
+            ]
+        },
+        {
+            "name": "Python: index-mp.py No weighting input File",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/index-mp.py",
+            "console": "integratedTerminal",
+            "args": [
+                "input.thesis.group_velocity_tests_001",
+            ]
+        },
+        {
+            "name": "Python: eProbe-FullTrack.py File",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/eProbe-FullTrack.py",
+            "console": "integratedTerminal",
+            "args": [
+                "input.36-50__xwid-1__0-002__01",
+                "input.weights__x_0-1__y_0-01"
+            ]
+        }
+    ]
+}
