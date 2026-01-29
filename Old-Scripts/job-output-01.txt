@@ -1,0 +1,7 @@
+Start Time:  13:08:56
+Using initial conditions from  input.thesis.Eta_Plot.single_arbitrary_eta_01
+Probe initialized...
+Number of objects: 1
+End Time:  13:09:15
+Duration:  0.31499098936716713  min
+Debug object saved to single_arbitrary_eta_01-DEBUG.obj

@@ -1,0 +1,6 @@
+Start Time:  13:46:20
+Using initial conditions from  input.test-06
+Using beam conditions from  input.test_weights-06
+Plotting...
+End Time:  13:47:26
+Duration:  1.1049882729848226  min

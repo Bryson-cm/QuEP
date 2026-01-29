@@ -1,0 +1,17 @@
+#!/bin/bash
+#
+#SBATCH --job-name=QuEP-nmanz
+#SBATCH --output=job-output.txt
+#SBATCH --ntasks-per-node=24
+#SBATCH --nodes=1
+#SBATCH --time=04:00:00
+#SBATCH -p short-24core
+#SBATCH --mail-type=BEGIN,END
+#SBATCH --mail-user=nicholas.manzella@stonybrook.edu
+
+module load shared
+module load anaconda
+
+cd /gpfs/home/nmanzella/PWA/QuEP/
+
+python main.py input.rprism_t-02

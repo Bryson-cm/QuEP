@@ -1,0 +1,13 @@
+Start Time:  13:14:57
+Using initial conditions from  input.thesis.Eta_Plot.single_arbritary_eta_03
+Traceback (most recent call last):
+  File "main.py", line 60, in <module>
+    init = importlib.import_module(input_fname)
+  File "/gpfs/software/Anaconda3/lib/python3.7/importlib/__init__.py", line 127, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+  File "<frozen importlib._bootstrap>", line 1006, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 983, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 965, in _find_and_load_unlocked
+ModuleNotFoundError: No module named 'input.thesis.Eta_Plot.single_arbritary_eta_03'
+mv: cannot stat ‘single_arbitrary_eta_03.npz’: No such file or directory
+mv: cannot stat ‘single_arbitrary_eta_03-DEBUG.obj’: No such file or directory

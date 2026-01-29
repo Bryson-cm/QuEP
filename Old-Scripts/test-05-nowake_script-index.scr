@@ -1,0 +1,17 @@
+#!/bin/bash
+#
+#SBATCH --job-name=QuEP-nmanz
+#SBATCH --output=nowake-job-output.txt
+#SBATCH --ntasks-per-node=28
+#SBATCH --nodes=1
+#SBATCH --time=01:00:00
+#SBATCH -p debug-28core
+#SBATCH --mail-type=END
+#SBATCH --mail-user=nicholas.manzella@stonybrook.edu
+
+module load shared
+module load anaconda
+
+cd /gpfs/home/nmanzella/PWA/QuEP/
+
+python index.py input.test-05-nowake input.test_weights-05

@@ -1,0 +1,7 @@
+Start Time:  11:38:14
+Using initial conditions from  input.test-06
+s3 = 0.5
+Probe initialized
+499600
+End Time:  12:29:10
+Duration:  50.929120071729024  min
