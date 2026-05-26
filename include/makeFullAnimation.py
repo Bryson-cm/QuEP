@@ -94,14 +94,20 @@ def prepare(sim_name,shape_name,noObj,rand):
     
     # Choose boundaries of screens in mm
     xstart_mm = 0
+<<<<<<< HEAD
     xend_mm = 150
     xstep_mm = 50
+=======
+    xend_mm = -0.5 #-0.159505505 #150 #such that it ends at x = 3.0 c/wp
+    xstep_mm = 11 #50
+>>>>>>> nikhil-repo/main
 
     #binsizez = 6500//4#6000#833#2833#4167#1000#2666#1333
     #binsizey = 1000//4#400#2000#160#666#200
     
     # For Quasi_ID = 000130, use (36,50)
     # For Quasi_ID = 000067, use (24,37)
+<<<<<<< HEAD
     zmin = 37 #36  #25#27#400
     zmax = 44 #50  #500
     
@@ -109,12 +115,25 @@ def prepare(sim_name,shape_name,noObj,rand):
     ymax = 1
 
     bin_resolution = 0.08 #0.02 #c/w_p
+=======
+    zmin = 90 #37 #36  #25#27#400
+    zmax = 105 #50  #500
+    
+    ymin = -1.2  #-1
+    ymax = 1.2  #1
+
+    bin_resolution = 0.025 #0.08 #0.02 #c/w_p
+>>>>>>> nikhil-repo/main
     bin_edges_z = np.arange(zmin, zmax, bin_resolution)
     bin_edges_y = np.arange(ymin, ymax, bin_resolution)
     
     cmin = 1       # Minimum density displayed
     vmin_ = cmin    # Minimum color value
+<<<<<<< HEAD
     vmax_ = 100    # Maximum color value
+=======
+    vmax_ = 1000    # Maximum color value
+>>>>>>> nikhil-repo/main
 
     fps = 2 # frames per second for movie
 
@@ -134,7 +153,12 @@ def prepare(sim_name,shape_name,noObj,rand):
     norm = mpl.colors.Normalize(vmin=1, vmax=400)
 
     # Normalize screen distances
+<<<<<<< HEAD
     screen_dists = list(range(xstart_mm,xend_mm+1,xstep_mm))
+=======
+    #screen_dists = list(range(xstart_mm,xend_mm+1,xstep_mm))
+    screen_dists = list(np.linspace(xstart_mm,xend_mm+1,xstep_mm))  
+>>>>>>> nikhil-repo/main
     slices = len(screen_dists) # Number of Screens
     xs_norm = []
     for i in range(0,slices):
@@ -156,7 +180,11 @@ def prepare(sim_name,shape_name,noObj,rand):
 
 def plotmp(i,x_f,y_f,z_f,px_f,py_f,pz_f, w, xden, plasma_bnds, xs_norm, yslice, zslice, bin_edges_z, bin_edges_y, cmap, cmin, vmin_, vmax_, zmin, zmax, ymin, ymax, new_path, screen_dists):
     # Create figure
+<<<<<<< HEAD
     fig, ax = plt.subplots(1, figsize=(8, 5), dpi=600)
+=======
+    fig, ax = plt.subplots(1, figsize=(8, 5), dpi=600)  # figsize=(8,5)
+>>>>>>> nikhil-repo/main
     #fig.suptitle("Progression of Electron Probe")
     #plt.tight_layout(rect=[0, 0, 1, 0.9])
         
@@ -201,4 +229,8 @@ def plotmp(i,x_f,y_f,z_f,px_f,py_f,pz_f, w, xden, plasma_bnds, xs_norm, yslice, 
     #cbar.remove()
     ################################
 
+<<<<<<< HEAD
     
+=======
+    
+>>>>>>> nikhil-repo/main

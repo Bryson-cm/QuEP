@@ -36,7 +36,11 @@ useWeights_y = False                  # Use gaussian weights in y-direction
 useWeights_xi = False                 # Use gaussian weights in xi-direction
 
 skipWeightingCalc = False            # Skip weighting calculation and use imported pre-calculated weights
+<<<<<<< HEAD
 saveWeights = False                 # Save weights to .npz file (Remember to move to ./data directory!)
+=======
+saveWeights = True                 # Save weights to .npz file (Remember to move to ./data directory!)
+>>>>>>> nikhil-repo/main
 
 # Masking Options:
 useMasks_xi = False                 # Use masks in xi-direction (Vertical; done during weighting)
@@ -58,7 +62,11 @@ plotWeights3D = False                  # Plots y, xi, and 2D cross section
 
 # DEBUG PLOTTING
 plot2DTracks = False                 # View 2D projections of trajectories (SET ALL OTHERS TO FALSE & ONLY USE FOR SINGLE PARTICLE)
+<<<<<<< HEAD
 findFocal = False
+=======
+findFocal = True
+>>>>>>> nikhil-repo/main
 plot3DTracks = False
 findW = False
 
@@ -67,7 +75,11 @@ findW = False
 if __name__ == '__main__':
     # Start of main()
     # Initialize multiprocessing.Pool()
+<<<<<<< HEAD
     numberOfCores = 2 #mp.cpu_count() #8
+=======
+    numberOfCores = 15 #mp.cpu_count() #mp.cpu_count() #8
+>>>>>>> nikhil-repo/main
     print(f"Number of cores used for multiprocessing: {numberOfCores}")
     pool = mp.get_context('spawn').Pool(numberOfCores)
     if (len(sys.argv) >= 2):
@@ -148,12 +160,19 @@ if __name__ == '__main__':
             Fz_dat = debug.Fz_dat
             px_dat = debug.px_dat
             py_dat = debug.py_dat
+<<<<<<< HEAD
+=======
+            pz_dat = debug.pz_dat
+            
+            
+>>>>>>> nikhil-repo/main
 
         noObj = len(x_0) # Number of particles in the simulation (2D Projection)
 
         # WEIGHTING IMPORTS/SAVING
         rand = "{:02d}".format(randint(0,99))
         weights_fname = fname[:-4] + "-weights-" + rand
+<<<<<<< HEAD
         if (skipWeightingCalc):
             data = np.load('./data/' + weights_fname + '.npz') # Change this line as needed
             w = data['w']
@@ -180,6 +199,35 @@ if __name__ == '__main__':
             if (saveWeights):
                 np.savez(weights_fname, w=w)
                 print(f"\nWeights saved to {weights_fname + '.npz'}\n") #Saves weights for reuse
+=======
+        #weights_fname = fname + "-weights" 
+        #if (skipWeightingCalc):
+            #data = np.load('./data/' + weights_fname + '.npz') # Change this line as needed
+            #w = data['w']
+           # print(f"\nUsing weights from {'./data/' + weights_fname + '.npz'}...\n")
+        #else:
+            # Create weighting array with appropriate masks
+           # w = []
+           # w = [1 for k in range(0,noObj)] #Creates default array of weights with length noObj, each with value 1
+            
+           # start_time_w = time.time()
+           # t_w = time.localtime()
+           # curr_time_w = time.strftime("%H:%M:%S", t_w)
+           # print("\nWeighting calculations - START TIME: ", curr_time_w)
+
+            # Call weighting function getWeights 
+            # Note: w_virt, xv, yv, xiv, only used for debugging purposes
+           # w, w_export1, w_y, w_xi = weightmaskFunc.getWeights(beamx_c,beamy_c,beamxi_c,x_c,y_c,xi_c,s1,s2,xden,yden,xiden,res,sigma_x,sigma_y,sigma_xi,noObj,t0,useWeights_x,useWeights_y,useWeights_xi,useMasks_x,useMasks_xi,useMasks_y)    
+            
+           # t_w_end = time.localtime()
+           # curr_time_w_end = time.strftime("%H:%M:%S", t_w_end)
+           # print("Weighting calculations - END TIME: ", curr_time_w_end)
+           # print("Weighting calculations - DURATION: ", (time.time() - start_time_w)/60, " min\n")
+
+           # if (saveWeights):
+               # np.savez(weights_fname, w=w)
+              #  print(f"\nWeights saved to {weights_fname + '.npz'}\n") #Saves weights for reuse
+>>>>>>> nikhil-repo/main
 
         # Plot data points
         print("Plotting...")
@@ -237,11 +285,19 @@ if __name__ == '__main__':
             #plotWeights.plotxi(w_xi, x_0, y_0, xi_0, z_0, s1, s2, yden, xiden)
 
         if (findFocal):
+<<<<<<< HEAD
             findFocalY.calculate(x_0, y_0, xi_0, z_0, x_dat, y_dat, z_dat, xi_dat, px_f, py_f, pz_f, sim_name, shape_name, x_s, s1, s2)
         
         if (plot2DTracks):
             print("Plotting 2D Tracks...")
             plot2D.plot(x_dat, y_dat, z_dat, xi_dat, Fx_dat, Fy_dat, Fz_dat, px_dat, py_dat, sim_name, shape_name, s1, s2, noObj, fname)
+=======
+            findFocalY.calculate(x_0, y_0, xi_0, z_0, x_dat, y_dat, z_dat, xi_dat, px_f, py_f, pz_f, sim_name, shape_name, x_s, s1, s2,px_0,py_0,pz_0)
+        
+        if (plot2DTracks):
+            print("Plotting 2D Tracks...")
+            plot2D.plot(x_dat, y_dat, z_dat, xi_dat, Fx_dat, Fy_dat, Fz_dat, px_dat, py_dat, pz_dat, sim_name, shape_name, s1, s2, noObj, fname)
+>>>>>>> nikhil-repo/main
         
         if (plot3DTracks):
             plot3D.plot(x_dat,y_dat,z_dat,xi_dat,sim_name,shape_name,s1,s2,noObj)
@@ -260,4 +316,8 @@ if __name__ == '__main__':
     
     pool.close()
 
+<<<<<<< HEAD
     pool.join()
+=======
+    pool.join()
+>>>>>>> nikhil-repo/main

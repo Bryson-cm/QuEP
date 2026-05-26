@@ -17,7 +17,11 @@ def getFieldArrays():
 
     chargeIons = np.empty((riter,xiiter),dtype=float)
 
+<<<<<<< HEAD
     for ir in progressbar.progressbar(range(riter), redirect_stout=True):
+=======
+    for ir in range(riter):   # replaced progressbar.progressbar(range(riter), redirect_stout=True) with range(riter)
+>>>>>>> nikhil-repo/main
         for ixi in range(xiiter):
             #pdb.set_trace()
             chargeIons[ir, ixi] = sim.chargeIons(1, raxis_1[ir], 0, xiaxis_1[ixi], raxis_1[ir], mode=0)
@@ -55,7 +59,11 @@ def main():
 
     print((time.time() - start_time)/60, " min")
 
+<<<<<<< HEAD
     plt.savefig("chargeIons-density.png",transparent=True)
+=======
+    plt.savefig("chargeIons-density.png",transparent=False)
+>>>>>>> nikhil-repo/main
     #plt.show()
 
 main()

@@ -31,6 +31,10 @@ C = 299892458                         # Speed of light in vacuum in m/s
 Quasi_ID = '000130' #'000067' is for a0 = 4 matched density data
                     #'000130' is for 1e15 density data
                     #'000144' or '000232' are for 1e17 density data (at different times in run)
+<<<<<<< HEAD
+=======
+                    #'00016500' is for Naveen's field data
+>>>>>>> nikhil-repo/main
 
 def getField(fpath): 
     f = h5.File(fpath,"r")
@@ -50,6 +54,11 @@ def getPlasDensity():
         return 1e21
     elif (Quasi_ID == '000067'):
         return 1.1e16
+<<<<<<< HEAD
+=======
+    elif (Quasi_ID == '00016500'):
+        return 1e21
+>>>>>>> nikhil-repo/main
     else:
         return 3e23
 
@@ -58,6 +67,11 @@ def getPropagationSpeed(): # Define the group velocity of the laser
         return 1.000 #THIS IS INCORRECT, JUST FOR TESTING
     elif (Quasi_ID == '000067'):
         return 0.9958959
+<<<<<<< HEAD
+=======
+    elif (Quasi_ID == '00016500'):
+        return 1.000
+>>>>>>> nikhil-repo/main
     else:
         return 1
 

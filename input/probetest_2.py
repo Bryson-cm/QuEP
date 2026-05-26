@@ -10,7 +10,11 @@ fname = "wakefield_test.npz"
 debugmode = False
 
 # Probe centered at the following initial coordinates (in c/w_p):
+<<<<<<< HEAD
 x_c = -1. # Start within region of field # 2.4 = maximum x_c
+=======
+x_c = -1.0 # Start within region of field # 2.4 = maximum x_c
+>>>>>>> nikhil-repo/main
 y_c = 0.
 xi_c = -9.5
 

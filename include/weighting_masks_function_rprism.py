@@ -66,7 +66,11 @@ def getWeights(beamx_c,beamy_c,beamxi_c,x_c,y_c,xi_c,s1,s2,xdensity,ydensity,xid
     w_export3 = w_xi
 
 # Loop through x layers to calculate weights with masks and add to 2D Y-Xi projection
+<<<<<<< HEAD
     for i in progressbar.progressbar(range(0,len(x_0)), redirect_stout=False):
+=======
+    for i in range(0,len(x_0)):  #for ir progressbar.progressbar(range(0,len(x_0)), redirect_stout=False)
+>>>>>>> nikhil-repo/main
         start_time_weightcalc = time.time()
 
         if (useWeights_x):
@@ -114,8 +118,13 @@ def xiMasks(xi_0, w_xi):
 
 def yMasks(y_0, w_y):
     # Define masks in y direction, 0 is 0 on the y-axis. Change if different mask is desired
+<<<<<<< HEAD
     top_of_masks = [-0.3,0.4]  #upper limit of each mask in order, on inital y position
     bot_of_masks = [-0.4,0.2]  #lower limit of each mask in order, on inital y position
+=======
+    top_of_masks = [-0.20,0.200,5.0]  #upper limit of each mask in order, on inital y position
+    bot_of_masks = [-5.0,-0.20,0.400]  #lower limit of each mask in order, on inital y position
+>>>>>>> nikhil-repo/main
 
     # Apply masks to w_y
     for h in range(0,len(top_of_masks)):

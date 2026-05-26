@@ -1,5 +1,9 @@
 import math
 import numpy as np
+<<<<<<< HEAD
+=======
+from tqdm import tqdm
+>>>>>>> nikhil-repo/main
 
 from DebugObjectModule import DebugObject
 
@@ -81,6 +85,10 @@ def Momentum(x,y,xi,dt,px,py,pz,mode,sim_name):
     else:
         print("Simulation name unrecognized. Quitting...")
         exit()
+<<<<<<< HEAD
+=======
+    #TODO: Add the FBPIC Here
+>>>>>>> nikhil-repo/main
     
     # Returns the new momentum after dt, in units of c in the axis direction
     p = math.sqrt(px**2 + py**2 + pz**2)
@@ -106,7 +114,11 @@ def Momentum(x,y,xi,dt,px,py,pz,mode,sim_name):
     gam = Gamma(p)
     return px, py, pz, p, gam, Fx, Fy, Fz
 
+<<<<<<< HEAD
 def getArrayForm(x_dat_, y_dat_, z_dat_, xi_dat_, Fx_dat_, Fy_dat_, Fz_dat_, px_dat_, py_dat_, iter):
+=======
+def getArrayForm(x_dat_, y_dat_, z_dat_, xi_dat_, Fx_dat_, Fy_dat_, Fz_dat_, px_dat_, py_dat_, pz_dat_, iter):
+>>>>>>> nikhil-repo/main
     # Initialize whole trajectory arrays
     den = 1
     x_dat = np.empty([den, iter])
@@ -129,7 +141,12 @@ def getArrayForm(x_dat_, y_dat_, z_dat_, xi_dat_, Fx_dat_, Fy_dat_, Fz_dat_, px_
     Fz_dat[0,:] = Fz_dat_
     px_dat[0,:] = px_dat_
     py_dat[0,:] = py_dat_
+<<<<<<< HEAD
     return x_dat, y_dat, z_dat, xi_dat, Fx_dat, Fy_dat, Fz_dat, px_dat, py_dat
+=======
+    pz_dat[0,:] = pz_dat_
+    return x_dat, y_dat, z_dat, xi_dat, Fx_dat, Fy_dat, Fz_dat, px_dat, py_dat, pz_dat
+>>>>>>> nikhil-repo/main
 
 def getTrajectory(x_0,y_0,xi_0,px_0,py_0,pz_0,t0,iter,plasma_bnds,mode,sim_name,debugmode, x_s):
 # Returns array of x, y, xi, z, and final x, y, xi, z, px, py, pz
@@ -161,17 +178,30 @@ def getTrajectory(x_0,y_0,xi_0,px_0,py_0,pz_0,t0,iter,plasma_bnds,mode,sim_name,
     if debugmode == True: 
         print("Using Debug Mode...")
         x_f, y_f, xi_f, z_f, px_f, py_f, pz_f = [],[],[],[],[],[],[] # Final positions-momenta of particle
+<<<<<<< HEAD
         x_dat, y_dat, z_dat, xi_dat, Fx_dat, Fy_dat, Fz_dat, px_dat, py_dat = [],[],[],[],[],[],[],[],[]
+=======
+        x_dat, y_dat, z_dat, xi_dat, Fx_dat, Fy_dat, Fz_dat, px_dat, py_dat, pz_dat = [],[],[],[],[],[],[],[],[],[]
+>>>>>>> nikhil-repo/main
     #################
 
     # Iterate through position and time using a linear approximation
     for i in range(0, iter):
         # Determine new momentum and velocity from this position
+<<<<<<< HEAD
+=======
+
+>>>>>>> nikhil-repo/main
         px, py, pz, p, gam, Fx, Fy, Fz = Momentum(xn, yn, xin, dt, px, py, pz, mode, sim_name)
 
         vxn = Velocity(px, p)
         vyn = Velocity(py, p)
         vzn = Velocity(pz, p)
+<<<<<<< HEAD
+=======
+        
+        
+>>>>>>> nikhil-repo/main
 
         # Log data in arrays if in debug mode
         if debugmode == True:
@@ -184,6 +214,10 @@ def getTrajectory(x_0,y_0,xi_0,px_0,py_0,pz_0,t0,iter,plasma_bnds,mode,sim_name,
             Fz_dat.append(Fz)
             px_dat.append(px)
             py_dat.append(py)
+<<<<<<< HEAD
+=======
+            pz_dat.append(pz)
+>>>>>>> nikhil-repo/main
         
         xn += vxn * dt
         yn += vyn * dt
@@ -197,16 +231,30 @@ def getTrajectory(x_0,y_0,xi_0,px_0,py_0,pz_0,t0,iter,plasma_bnds,mode,sim_name,
         if (xin < plasma_bnds[0] or xin > plasma_bnds[1] or rn > plasma_bnds[2]):
             if debugmode == True:
                 print("Tracking quit due to particle leaving cell")
+<<<<<<< HEAD
                 x_dat, y_dat, z_dat, xi_dat, Fx_dat, Fy_dat, Fz_dat, px_dat, py_dat = getArrayForm(x_dat, y_dat, z_dat, xi_dat, Fx_dat, Fy_dat, Fz_dat, px_dat, py_dat, i+1)
                 Debug = DebugObject(x_dat, y_dat, z_dat, xi_dat, Fx_dat, Fy_dat, Fz_dat, px_dat, py_dat)
                 print("Debug object created...")
             return xn, yn, xin, zn, px, py, pz, Debug
+=======
+                x_dat, y_dat, z_dat, xi_dat, Fx_dat, Fy_dat, Fz_dat, px_dat, py_dat, pz_dat = getArrayForm(x_dat, y_dat, z_dat, xi_dat, Fx_dat, Fy_dat, Fz_dat, px_dat, py_dat, pz_dat, i+1)
+                Debug = DebugObject(x_dat, y_dat, z_dat, xi_dat, Fx_dat, Fy_dat, Fz_dat, px_dat, py_dat, pz_dat)
+                print("Debug object created...")
+            return xn, yn, xin, zn, px, py, pz, Debug
+        
+        
+>>>>>>> nikhil-repo/main
 
     print("Tracking quit due to more than ", iter, " iterations in plasma")
     
     if debugmode == True:
+<<<<<<< HEAD
         x_dat, y_dat, z_dat, xi_dat, Fx_dat, Fy_dat, Fz_dat, px_dat, py_dat = getArrayForm(x_dat, y_dat, z_dat, xi_dat, Fx_dat, Fy_dat, Fz_dat, px_dat, py_dat, i+1)
         Debug = DebugObject(x_dat, y_dat, z_dat, xi_dat, Fx_dat, Fy_dat, Fz_dat, px_dat, py_dat)
+=======
+        x_dat, y_dat, z_dat, xi_dat, Fx_dat, Fy_dat, Fz_dat, px_dat, py_dat, pz_dat = getArrayForm(x_dat, y_dat, z_dat, xi_dat, Fx_dat, Fy_dat, Fz_dat, px_dat, py_dat, pz_dat, i+1)
+        Debug = DebugObject(x_dat, y_dat, z_dat, xi_dat, Fx_dat, Fy_dat, Fz_dat, px_dat, py_dat, pz_dat)
+>>>>>>> nikhil-repo/main
         print("Debug object created...")
 
     return xn, yn, xin, zn, px, py, pz, Debug
