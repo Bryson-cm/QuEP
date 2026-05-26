@@ -5,6 +5,8 @@ This code was developed to simulate an electron probe's trajectory through a pla
 The `master` branch contains the most up-to-date code.
 
 ### Running the Simulation
+Before running the main sets of simulations, you should check that the code is working properly on your computer and the HPC cluster. Do this by performing a "betatron" unit test, the details of which can be found in the `betatronTutorialFinal.ipynb` notebook. If you are unfamiliar with running Python simulations on an HPC, check out the `introSeawulfFinal.ipynb` notebook. Both of these notebooks were written by Ashley Lindquist.
+
 To run the simulation, add an initialization file in the `input` folder, such as the file `example.py`, which would be input to the simulation using
 ```
 python main.py input.example
@@ -61,7 +63,9 @@ While using the dynamic masking procedures, the only plotting boolean values tha
 
 ### Repository Structure 
 
-The `master` branch contains the most up-to-date code.
+The `master` branch contains the most up-to-date code, as updated by Evan Trommer and Nikhil Keer.
+
+The `version-2.1` branch contains an updated version to the code with extra files compared to the `master` branch. This branch is where new code for dynamic masking and updated multiprocessing was originally written. 
 
 The `version-2.0` branch contains the second complete version of the code, as left by Nick Manzella. This version of the code implements weighting in the y and xi directions, masking in the y and xi directions, an arbitrary group velocity feature, and the ability to create 3D probes with size limitations at larger numbers of particles due to memory issues. 
 
@@ -94,22 +98,18 @@ To add a new set of simulation data, create a file within the simulations direct
 * As noted before, there are limitations to the 3D probes feature as you will quickly run out of memory on both personal and supercomputers with high density probes.
 
 ### Requirements
-This simulation uses Python 3.0, and requires the packages `h5py`, `importlib`, `numpy`, and `multiprocessing`. Plots require `matplotlib`.
+This simulation requires at least Python 3.8, and requires the packages `h5py`, `importlib`, `numpy`, and `multiprocessing`. Plots require `matplotlib`.
 
 ### Contact
-Contact Evan Trommer (evtrommer[at]gmail.com), Nicholas Manzella (nick.manzella31[at]gmail.com) or Marisa Petrusky (marisapetrusky[at]gmail.com) for questions about this code. Source code can be found at https://github.com/SBU-PAG/QuEP/
+All work presented in this repository was done under the supervision of Professor Navid Vafaei-Najafabadi (navid.vafaei-najafabadi[at]stonybrook.edu). Contact Evan Trommer (evtrommer[at]gmail.com), Nicholas Manzella (nick.manzella31[at]gmail.com) or Marisa Petrusky (marisapetrusky[at]gmail.com) for questions about this code. Source code can be found at https://github.com/SBU-PAG/QuEP/
 
 #### Theses
 For more information on this project, you can read our senior thesises here:
 
-<<<<<<< HEAD
 Evan Trommer (Stony Brook University, 2023): [Transverse Probing of Laser-Driven Plasma Wakefields Using Relativistic Electrons](https://github.com/evan-trommer/Bachelor-Thesis)
-=======
-Evan Trommer (Stony Brook University, 2023): *To be uploaded soon.*
->>>>>>> nikhil-repo/main
 
 Nick Manzella (Stony Brook University, 2022): [Development of methods for modeling the interactions of plasma wakefields with a realistic 3D electron probe](https://1drv.ms/b/s!AkeL_dqkZf-PieYi7_ddYZSPNQklPg?e=ayKaUf)
 
 Marisa Petrusky (Stony Brook University, 2021): [Picturing Plasma: Studying the Simulated Transverse Probing of Laser Wakefield Accelerators](https://www.researchgate.net/publication/351853356_Picturing_Plasma_Studying_the_Simulated_Transverse_Probing_of_Laser_Wakefield_Accelerators)
 
-Audrey Farrell (Stony Brook University, 2020): Simulating beam induced ionization-injectionin plasma wakefield accelerators (*Email Evan or Marisa for copy*)
+Audrey Farrell (Stony Brook University, 2020): Simulating beam induced ionization-injectionin plasma wakefield accelerators.

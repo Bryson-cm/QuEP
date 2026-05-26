@@ -32,11 +32,8 @@ import time
 import pickle
 import multiprocessing as mp
 from DebugObjectModule import DebugObject
-<<<<<<< HEAD
-=======
 from numba import jit, cuda    # Imports to run on GPU
 from tqdm import tqdm
->>>>>>> nikhil-repo/main
 
 # Include file imports
 import eProbe
@@ -51,12 +48,8 @@ C = 299892458                        # Speed of light in vacuum in m/s
 if __name__ == '__main__':
     # Start of main()
     # Initialize multiprocessing.Pool()
-<<<<<<< HEAD
-    pool = mp.Pool(1)# mp.cpu_count())
-=======
     pool = mp.Pool(mp.cpu_count())# mp.cpu_count())
     #@jit(target_backend='cuda')
->>>>>>> nikhil-repo/main
 
     start_time = time.time()
     t = time.localtime()
@@ -92,11 +85,8 @@ if __name__ == '__main__':
             import include.simulations.useOsiCylin as sim
         elif (sim_name.upper() == 'QUASI3D'):
             import include.simulations.useQuasi3D as sim
-<<<<<<< HEAD
-=======
         elif (sim_name.upper() == 'FBPIC'):
             import include.simulations.useFBPIC as sim
->>>>>>> nikhil-repo/main
         else:
             print("Simulation name unrecognized. Quitting...")
             exit()
@@ -133,11 +123,6 @@ if __name__ == '__main__':
 
         if debugmode == True:
             assert shape_name == 'single', "Debug mode can only be used with shape 'single'"
-<<<<<<< HEAD
-  
-        x_f, y_f, xi_f, z_f, px_f, py_f, pz_f, Debug = zip(*pool.starmap(eProbe.getTrajectory, [(x_0[i], y_0[i], xi_0[i], px_0, py_0, pz_0, t0, iter, plasma_bnds, mode, sim_name, debugmode, x_s) for i in range(0,noObj)]))
-
-=======
 
         
     
@@ -145,7 +130,6 @@ if __name__ == '__main__':
 
        
 
->>>>>>> nikhil-repo/main
         
         pool.close()
 

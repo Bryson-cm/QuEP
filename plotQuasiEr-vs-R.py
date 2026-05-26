@@ -21,11 +21,7 @@ def getFieldArrays():
 
     Er_m0 = np.empty((riter,xilength),dtype=float)
 
-<<<<<<< HEAD
-    for ir in progressbar.progressbar(range(riter), redirect_stout=True):
-=======
     for ir in range(riter):   # replaced progressbar.progressbar(range(riter), redirect_stout=True) with range(riter)
->>>>>>> nikhil-repo/main
         for ixi in range(xilength):
             Er_m0[ir,ixi] = sim.EField(2, raxis_1[ir], 0, xi_position[ixi], raxis_1[ir], mode=0)
 
@@ -70,10 +66,6 @@ def main():
 
     print((time.time() - start_time)/60, " min")
 
-<<<<<<< HEAD
-    fig1.savefig("Er-vs-R-M0-fields.png",dpi=600,transparent=True)
-=======
     fig1.savefig("Er-vs-R-M0-fields.png",dpi=600,transparent=False)
->>>>>>> nikhil-repo/main
 
 main()

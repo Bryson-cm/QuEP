@@ -135,13 +135,8 @@ def plot(x_f,y_f,xi_f,z_f,px_f,py_f,pz_f,sim_name,shape_name,x_s,noElec,iter):
 
     secax = axs4[2].secondary_xaxis('top', functions= (returnXi, returnZ))
     secax.set(xlabel= '$\\xi$ ($c/\omega_p$)')
-<<<<<<< HEAD
-        #axs4[i].set_ylim(-1,1)
-        #axs4[i].set_xlim(35,40)
-=======
     #axs4[i].set_ylim(-30,1) #commented out before was -1 to 1
     #axs4[i].set_xlim(0,2000)  #commented out before was 35 to 40 before
->>>>>>> nikhil-repo/main
     axs4[2].set(xlabel = 'Z ($c/\omega_p$)', ylabel = 'Y ($c/\omega_p$)')
     ######################################################################################
 
