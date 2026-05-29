@@ -11,12 +11,12 @@ import math
 import copy
 import time
 import progressbar
-import include.movieWriter as movieWriter
 import multiprocessing as mp
 import include.simulations.useQuasi3D as sim
 
 plt.rcParams.update({'font.size': 12 })
 #plt.rcParams['animation.ffmpeg_path'] = '/ffmpeg/bin'
+plt.rcParams['figure.constrained_layout.use'] = True
 mpl.use('Agg')
 
 # Definition of Constants
@@ -94,27 +94,27 @@ def prepare(sim_name,shape_name,noObj,rand):
     
     # Choose boundaries of screens in mm
     xstart_mm = 0
-    xend_mm = 110
-    xstep_mm = 50
+    xend_mm = -0.5 #-0.159505505 #150 #such that it ends at x = 3.0 c/wp
+    xstep_mm = 11 #50
 
     #binsizez = 6500//4#6000#833#2833#4167#1000#2666#1333
     #binsizey = 1000//4#400#2000#160#666#200
     
     # For Quasi_ID = 000130, use (36,50)
     # For Quasi_ID = 000067, use (24,37)
-    zmin = 28 #36  #25#27#400
-    zmax = 38 #50  #500
+    zmin = 90 #37 #36  #25#27#400
+    zmax = 105 #50  #500
     
-    ymin = -1.0
-    ymax = 1.0
+    ymin = -1.2  #-1
+    ymax = 1.2  #1
 
-    bin_resolution = 0.02 #c/w_p
+    bin_resolution = 0.025 #0.08 #0.02 #c/w_p
     bin_edges_z = np.arange(zmin, zmax, bin_resolution)
     bin_edges_y = np.arange(ymin, ymax, bin_resolution)
     
     cmin = 1       # Minimum density displayed
     vmin_ = cmin    # Minimum color value
-    vmax_ = 500    # Maximum color value
+    vmax_ = 1000    # Maximum color value
 
     fps = 2 # frames per second for movie
 
@@ -134,7 +134,8 @@ def prepare(sim_name,shape_name,noObj,rand):
     norm = mpl.colors.Normalize(vmin=1, vmax=400)
 
     # Normalize screen distances
-    screen_dists = list(range(xstart_mm,xend_mm+1,xstep_mm))
+    #screen_dists = list(range(xstart_mm,xend_mm+1,xstep_mm))
+    screen_dists = list(np.linspace(xstart_mm,xend_mm+1,xstep_mm))  
     slices = len(screen_dists) # Number of Screens
     xs_norm = []
     for i in range(0,slices):
@@ -156,9 +157,9 @@ def prepare(sim_name,shape_name,noObj,rand):
 
 def plotmp(i,x_f,y_f,z_f,px_f,py_f,pz_f, w, xden, plasma_bnds, xs_norm, yslice, zslice, bin_edges_z, bin_edges_y, cmap, cmin, vmin_, vmax_, zmin, zmax, ymin, ymax, new_path, screen_dists):
     # Create figure
-    fig, ax = plt.subplots(1, figsize=(8, 5), dpi=600)
-    fig.suptitle("Progression of EProbe")
-    plt.tight_layout(rect=[0, 0, 1, 0.9])
+    fig, ax = plt.subplots(1, figsize=(8, 5), dpi=600)  # figsize=(8,5)
+    #fig.suptitle("Progression of Electron Probe")
+    #plt.tight_layout(rect=[0, 0, 1, 0.9])
         
     # Project positions at distances in x_s
     # If x_s out of plasma, use ballistic trajectory
@@ -185,7 +186,7 @@ def plotmp(i,x_f,y_f,z_f,px_f,py_f,pz_f, w, xden, plasma_bnds, xs_norm, yslice, 
     secax = ax.secondary_xaxis('top', functions= (returnXi, returnZ))
     secax.set(xlabel= '$\\xi$ ($c/\omega_p$)')
     
-    cbar = plt.colorbar(h[3], ax=ax, orientation='horizontal')#, pad=0.3)
+    cbar = plt.colorbar(h[3], ax=ax, orientation='horizontal')#, pad=0.2)
     #cbar.set_label('Electron Density')
 
     #Saving

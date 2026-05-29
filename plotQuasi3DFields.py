@@ -25,7 +25,7 @@ def getFieldArrays():
     By = np.zeros((riter,xiiter),dtype=float)
     Bz = np.zeros((riter,xiiter),dtype=float)
 
-    for ir in progressbar.progressbar(range(riter), redirect_stout=True):
+    for ir in range(riter):   # replaced progressbar.progressbar(range(riter), redirect_stout=True) with range(riter)
         for ixi in range(xiiter):
             #pdb.set_trace()
             Ex[ir, ixi] = sim.EField(2, raxis_1[ir], 0, xiaxis_1[ixi], raxis_1[ir])
@@ -83,7 +83,7 @@ def main():
 
     print((time.time() - start_time)/60, " min")
 
-    plt.savefig("fields.png",dpi=600,transparent=True)
+    plt.savefig("fields.png",dpi=600,transparent=False) # Changed transparent to False for better image (background is checkered if left True)
     #plt.show()
     input()
 

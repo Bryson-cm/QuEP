@@ -1,5 +1,7 @@
 # Transverse Electron Probe of Laser Wakefield Tracking Script
-# Author: Marisa Petrusky - marisa.petrusky@stonybrook.edu
+# Authors: 
+# Nicholas Manzella - nick.manzella31@gmail.com
+# Marisa Petrusky - marisa.petrusky@stonybrook.edu - DEFUNCT
 #   This script is designed to take the Lorentz fields of a simulated laser wakefield
 #   and obtain the trajectory of an electron probe through a first order Runge Kutta
 
@@ -19,6 +21,7 @@
 #   y   - Direction perpendicular to transverse probe
 
 # Python Imports
+from copy import deepcopy
 import sys
 import math
 import numpy as np
@@ -29,6 +32,8 @@ import time
 import pickle
 import multiprocessing as mp
 from DebugObjectModule import DebugObject
+from numba import jit, cuda    # Imports to run on GPU
+from tqdm import tqdm
 
 # Include file imports
 import eProbe
@@ -43,7 +48,8 @@ C = 299892458                        # Speed of light in vacuum in m/s
 if __name__ == '__main__':
     # Start of main()
     # Initialize multiprocessing.Pool()
-    pool = mp.Pool(mp.cpu_count())
+    pool = mp.Pool(mp.cpu_count())# mp.cpu_count())
+    #@jit(target_backend='cuda')
 
     start_time = time.time()
     t = time.localtime()
@@ -79,6 +85,8 @@ if __name__ == '__main__':
             import include.simulations.useOsiCylin as sim
         elif (sim_name.upper() == 'QUASI3D'):
             import include.simulations.useQuasi3D as sim
+        elif (sim_name.upper() == 'FBPIC'):
+            import include.simulations.useFBPIC as sim
         else:
             print("Simulation name unrecognized. Quitting...")
             exit()
@@ -115,8 +123,14 @@ if __name__ == '__main__':
 
         if debugmode == True:
             assert shape_name == 'single', "Debug mode can only be used with shape 'single'"
+
+        
+    
         x_f, y_f, xi_f, z_f, px_f, py_f, pz_f, Debug = zip(*pool.starmap(eProbe.getTrajectory, [(x_0[i], y_0[i], xi_0[i], px_0, py_0, pz_0, t0, iter, plasma_bnds, mode, sim_name, debugmode, x_s) for i in range(0,noObj)]))
 
+       
+
+        
         pool.close()
 
         tf = time.localtime()
@@ -131,8 +145,6 @@ if __name__ == '__main__':
             filehandler = open(debugname, 'wb')
             pickle.dump(Debug,filehandler)
             print(f"Debug object saved to {debugname}")
-
-
 
     else:
         print("Improper number of arguments. Expected 'python3 main.py <fname>'")

@@ -6,3 +6,10 @@
 *.scr
 *.mp4
 *.jpg
+*.pyc
+*.json
+.vscode/launch.json
+*.pyc
+.DS_Store
+.vscode/launch.json
+.vscode/settings.json

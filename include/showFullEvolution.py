@@ -9,6 +9,8 @@ import matplotlib.ticker as ticker
 import pdb
 import math
 import copy
+import include.simulations.useQuasi3D as sim
+
 plt.rcParams.update({'font.size': 15 })
 mpl.use('Agg')
 
@@ -30,11 +32,13 @@ Viridis = True # Sequential + Perceptually Uniform
 BuPu = False # Sequential
 Jet = False
 
+t0 = sim.getTime()
+
 def returnXi(z):
-    return z - C * 54.3948 # Hardcoded time for Run 144!!!
+    return z - C * t0 
 
 def returnZ(xi):
-    return xi + C * 54.3948
+    return xi + C * t0
 
 def Gamma(p):
     return math.sqrt(1.0 + p**2)

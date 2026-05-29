@@ -1,14 +1,4 @@
-# Transverse Electron Probe of Laser Wakefield Tracking Script
-# Author: Marisa Petrusky - marisa.petrusky@stonybrook.edu
-#   This script is designed to take the Lorentz fields of a simulated laser wakefield
-#   and obtain the trajectory of an electron probe through a first order Runge Kutta
-
-#   Implemented Simulations:
-#   - Quasi3D
-
-#   Instructions on how to add more simulations can be found in the README
-
-#   Derived from Audrey Farrell's electron tracking script: eTracks.py
+# File that will output particles similar to main.py without propagation
 
 # Coordinate System
 #   z   - Direction of laser propagation (longitudinal)
@@ -19,6 +9,7 @@
 #   y   - Direction perpendicular to transverse probe
 
 # Python Imports
+from copy import deepcopy
 import sys
 import math
 import numpy as np
@@ -26,7 +17,9 @@ import h5py as h5
 import importlib
 import pdb
 import time
+import pickle
 import multiprocessing as mp
+from DebugObjectModule import DebugObject
 
 # Include file imports
 import eProbe
@@ -36,6 +29,7 @@ M_E = 9.109e-31                      # Electron rest mass in kg
 EC = 1.60217662e-19                  # Electron charge in C
 EP_0 = 8.854187817e-12               # Vacuum permittivity in C/(V m)
 C = 299892458                        # Speed of light in vacuum in m/s
+
 
 if __name__ == '__main__':
     # Start of main()
@@ -61,6 +55,7 @@ if __name__ == '__main__':
         iter = init.iterations
         mode = init.mode
         fname = init.fname
+        debugmode = init.debugmode
         x_c = init.x_c
         y_c = init.y_c
         xi_c = init.xi_c
@@ -105,12 +100,17 @@ if __name__ == '__main__':
     # Get arrays of initial coordinates in shape of probe
         x_0, y_0, xi_0, z_0 = shape.initProbe(x_c, y_c, xi_c, t0, s1, s2, xden, yden, xiden, res)
 
-        print("Probe initialized")
+        print("Probe initialized...")
         noObj = len(x_0) # Number of electrons/particles to track
         print("Number of objects:",noObj)
+        
+        if debugmode == True:
+            assert shape_name == 'single', "Debug mode can only be used with shape 'single'"
 
         #x_f, y_f, xi_f, z_f, px_f, py_f, pz_f = zip(*pool.starmap(eProbe.getTrajectory, [(x_0[i], y_0[i], xi_0[i], px_0, py_0, pz_0, t0, iter, plasma_bnds, mode, sim_name) for i in range(0,noObj)]))
-
+        Debug = None
+        
+        # Set final momenta = to inital momenta
         px_f = []
         px_f = [px_0 for k in range(0,noObj)]
         py_f = []
@@ -126,6 +126,12 @@ if __name__ == '__main__':
         print("Duration: ", (time.time() - start_time)/60, " min")
 
         np.savez(fname, x_init=x_0, y_init=y_0, xi_init=xi_0, z_init=z_0, x_dat=x_0, y_dat=y_0, xi_dat=xi_0, z_dat=z_0, px_dat=px_f, py_dat=py_f, pz_dat=pz_f, t_dat=t0)
+        
+        if debugmode == True:
+            debugname = fname[:-4]+"-DEBUG.obj"
+            filehandler = open(debugname, 'wb')
+            pickle.dump(Debug,filehandler)
+            print(f"Debug object saved to {debugname}")
 
     else:
         print("Improper number of arguments. Expected 'python3 main.py <fname>'")

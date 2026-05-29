@@ -28,7 +28,7 @@ EC = 1.60217662e-19                   # Electron charge in C
 EP_0 = 8.854187817e-12                # Vacuum permittivity in C/(V m)
 C = 299892458                         # Speed of light in vacuum in m/s
 
-Quasi_ID = '000067' #'000067' is for a0 = 4 matched density data
+Quasi_ID = '000130' #'000067' is for a0 = 4 matched density data
                     #'000130' is for 1e15 density data
                     #'000144' or '000232' are for 1e17 density data (at different times in run)
 
@@ -53,9 +53,9 @@ def getPlasDensity():
     else:
         return 3e23
 
-def getPropagationSpeed(): 
+def getPropagationSpeed(): # Define the group velocity of the laser
     if (Quasi_ID == '000130'):
-        return 0.95 #THIS IS INCORRECT, JUST FOR TESTING
+        return 1.000 #THIS IS INCORRECT, JUST FOR TESTING
     elif (Quasi_ID == '000067'):
         return 0.9958959
     else:
@@ -98,11 +98,11 @@ def getBoundCond(): # ***
     datasetNames = [n for n in f.keys()] # Three Datasets: AXIS, SIMULATION, Field data
     field = datasetNames[-1]
     Field_dat = f[field][:].astype(float)
-    a1_bounds = f['AXIS']['AXIS1'] # ximin and ximax
+    a1_bounds = f['AXIS']['AXIS1'] # zmin and zmax
     a2_bounds = f['AXIS']['AXIS2'] # rmin and rmax - dr/2
     dr = 6.59e-3
-    t0 = getTime()
-    return [a1_bounds[0] - t0, a1_bounds[1] - t0, a2_bounds[1] + dr/2] # zmin, zmax, rmax
+    t0 = getTime() # Call getTime func to get sim time
+    return [a1_bounds[0] - t0, a1_bounds[1] - t0, a2_bounds[1] + dr/2] # ximin, ximax, rmax
 
 # Return cylindrical Electric field components
 # E1 - z
@@ -168,6 +168,24 @@ def getB2_M1_Im():
 def getB3_M1_Im():
     return getField('data/OSIRIS/Quasi3D/b3_cyl_m-1-im-'+ Quasi_ID + '.h5')
 
+def getchargeElectrons_M0():
+    return getField('data/OSIRIS/Quasi3D/charge_cyl_m-electrons-0-re-'+ Quasi_ID + '.h5')
+
+def getchargeElectrons_M1_Re():
+    return getField('data/OSIRIS/Quasi3D/charge_cyl_m-electrons-1-re-'+ Quasi_ID + '.h5')
+
+def getchargeElectrons_M1_Im():
+    return getField('data/OSIRIS/Quasi3D/charge_cyl_m-electrons-1-im-'+ Quasi_ID + '.h5')
+
+def getchargeIons_M0():
+    return getField('data/OSIRIS/Quasi3D/charge_cyl_m-ions-0-re-'+ Quasi_ID + '.h5')
+
+def getchargeIons_M1_Re():
+    return getField('data/OSIRIS/Quasi3D/charge_cyl_m-ions-1-re-'+ Quasi_ID + '.h5')
+
+def getchargeIons_M1_Im():
+    return getField('data/OSIRIS/Quasi3D/charge_cyl_m-ions-1-im-'+ Quasi_ID + '.h5')
+
 E1_M0 = getE1_M0()
 E2_M0 = getE2_M0()
 E3_M0 = getE3_M0()
@@ -186,6 +204,15 @@ B3_M1_Re = getB3_M1_Re()
 B1_M1_Im = getB1_M1_Im()
 B2_M1_Im = getB2_M1_Im()
 B3_M1_Im = getB3_M1_Im()
+
+if Quasi_ID=="000067":
+    chargeElectrons_M0 = getchargeElectrons_M0()
+    chargeElectrons_M1_Re = getchargeElectrons_M1_Re()
+    chargeElectrons_M1_Im = getchargeElectrons_M1_Im()
+    chargeIons_M0 = getchargeIons_M0()
+    chargeIons_M1_Re = getchargeIons_M1_Re()
+    chargeIons_M1_Im = getchargeIons_M1_Im()
+
 
 def getPhi(x,y):
     return math.atan2(y,x) # From -pi to pi
@@ -297,3 +324,55 @@ def BField(axis,x,y,xi,r,vx=-1,vy=-1,vz=-1,vr=-1,vphi=-1,mode=-1):
             return B2_M0[rDex1, xiDex2]*cos - B3_M0[rDex2, xiDex2]*sin + B2_M1_Re[rDex1, xiDex2]*cos**2 - B3_M1_Re[rDex2, xiDex2]*cos*sin + B2_M1_Im[rDex1, xiDex2]*cos*sin - B3_M1_Im[rDex2, xiDex2]*sin**2
         elif (axis == 3):
             return B3_M0[rDex2, xiDex2]*cos + B2_M0[rDex1, xiDex2]*sin + B3_M1_Re[rDex2, xiDex2]*cos**2 + B2_M1_Re[rDex1, xiDex2]*cos*sin + B3_M1_Im[rDex2, xiDex2]*cos*sin + B2_M1_Im[rDex1, xiDex2]*sin**2
+
+
+def chargeElectrons(axis,x,y,xi,r,vx=-1,vy=-1,vz=-1,vr=-1,vphi=-1,mode=-1): # ***
+# axis = 1 refers to z-axis field
+# axis = 2 refers to x-axis field
+# axis = 3 refers to y-axis field
+# mode = 0 refers to LWF effects only
+# mode = 1 refers to laser effects only
+# mode = any other integer uses LWF + laser effects
+    phi = getPhi(x,y)
+    cos = math.cos(phi)
+    sin = math.sin(phi)
+    xiDex1 = find_nearest_index(xiaxis_1, xi)
+    xiDex2 = find_nearest_index(xiaxis_2, xi)
+    rDex1 = find_nearest_index(raxis_1, r)
+    rDex2 = find_nearest_index(raxis_2, r)
+    # Return chargeElectrons
+    if (mode == 0):
+        if (axis == 1):
+            return chargeElectrons_M0[rDex2, xiDex1]
+    elif (mode == 1):
+        if (axis == 1):
+            return chargeElectrons_M1_Re[rDex2, xiDex1]*cos + chargeElectrons_M1_Im[rDex2, xiDex1]*sin
+    else:
+        if (axis == 1):
+            return chargeElectrons_M0[rDex2, xiDex1] + chargeElectrons_M1_Re[rDex2, xiDex1]*cos + chargeElectrons_M1_Im[rDex2, xiDex1]*sin
+
+
+def chargeIons(axis,x,y,xi,r,vx=-1,vy=-1,vz=-1,vr=-1,vphi=-1,mode=-1): # ***
+# axis = 1 refers to z-axis field
+# axis = 2 refers to x-axis field
+# axis = 3 refers to y-axis field
+# mode = 0 refers to LWF effects only
+# mode = 1 refers to laser effects only
+# mode = any other integer uses LWF + laser effects
+    phi = getPhi(x,y)
+    cos = math.cos(phi)
+    sin = math.sin(phi)
+    xiDex1 = find_nearest_index(xiaxis_1, xi)
+    xiDex2 = find_nearest_index(xiaxis_2, xi)
+    rDex1 = find_nearest_index(raxis_1, r)
+    rDex2 = find_nearest_index(raxis_2, r)
+    # Return chargeIons
+    if (mode == 0):
+        if (axis == 1):
+            return chargeIons_M0[rDex2, xiDex1]
+    elif (mode == 1):
+        if (axis == 1):
+            return chargeIons_M1_Re[rDex2, xiDex1]*cos + chargeIons_M1_Im[rDex2, xiDex1]*sin
+    else:
+        if (axis == 1):
+            return chargeIons_M0[rDex2, xiDex1] + chargeIons_M1_Re[rDex2, xiDex1]*cos + chargeIons_M1_Im[rDex2, xiDex1]*sin

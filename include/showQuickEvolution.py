@@ -8,6 +8,7 @@ import matplotlib.cm as cm
 import matplotlib.ticker as ticker
 import pdb
 import math
+import include.simulations.useQuasi3D as sim
 plt.rcParams.update({'font.size': 15 })
 mpl.use('Agg')
 
@@ -43,11 +44,13 @@ def getBallisticTraj(x_0,y_0,xi_0,z_0,px,py,pz,x_s):
 
     return y_f, xi_f, z_f
 
+t0 = sim.getTime()
+
 def returnXi(z):
-    return z - C * 54.3948 # Hardcoded time for Run 144!!!
+    return z - C * t0
 
 def returnZ(xi):
-    return xi + C * 54.3948
+    return xi + C * t0
 
 def plot(x_f,y_f,xi_f,z_f,px_f,py_f,pz_f,sim_name,shape_name,x_s,noElec,iter):
 # Plot evolution of probe after leaving plasma
@@ -93,7 +96,7 @@ def plot(x_f,y_f,xi_f,z_f,px_f,py_f,pz_f,sim_name,shape_name,x_s,noElec,iter):
         #axs[i].hist2d(xislice[i,:], yslice[i,:], bins=(50,50), cmap=plt.cm.jet)
         axs[i].scatter(xislice[i,:], yslice[i,:], c='C0', zorder=1)
         axs[i].set_xlim(27,52)
-        axs[i].set_ylim(-6,6)
+        axs[i].set_ylim(-12,12)
     #for ax in axs.flat:
         #ax.set(xlabel = '$\\xi$ ($c/\omega_p$)', ylabel = 'Y ($c/\omega_p$)')
         #ax.label_outer()
@@ -122,6 +125,7 @@ def plot(x_f,y_f,xi_f,z_f,px_f,py_f,pz_f,sim_name,shape_name,x_s,noElec,iter):
         #axs3[i].set_xlim(35,40)
     axs3[2].set(xlabel = 'Z ($c/\omega_p$)', ylabel = 'Y ($c/\omega_p$)')
 
+    #####################################################################################
     fig8, axs4 = plt.subplots(3, sharex=True, sharey=True, figsize=(8, 10), dpi=80)
     fig8.suptitle("Progression of " + shape_name + " EProbe")
 
@@ -131,9 +135,10 @@ def plot(x_f,y_f,xi_f,z_f,px_f,py_f,pz_f,sim_name,shape_name,x_s,noElec,iter):
 
     secax = axs4[2].secondary_xaxis('top', functions= (returnXi, returnZ))
     secax.set(xlabel= '$\\xi$ ($c/\omega_p$)')
-        #axs4[i].set_ylim(-1,1)
-        #axs4[i].set_xlim(35,40)
+    #axs4[i].set_ylim(-30,1) #commented out before was -1 to 1
+    #axs4[i].set_xlim(0,2000)  #commented out before was 35 to 40 before
     axs4[2].set(xlabel = 'Z ($c/\omega_p$)', ylabel = 'Y ($c/\omega_p$)')
+    ######################################################################################
 
     fig9, axs5 = plt.subplots(constrained_layout=True, figsize=(10,5))
     axs5.set_title("Low Density Probe, X = " + str(x_s[5]) + " mm")
@@ -147,6 +152,6 @@ def plot(x_f,y_f,xi_f,z_f,px_f,py_f,pz_f,sim_name,shape_name,x_s,noElec,iter):
     #fig.tight_layout()
     #fig6.show()
     #fig7.show()
-    fig8.savefig('quickevolution.png')
+    fig8.savefig('quickevolutions.png')
 
     input()

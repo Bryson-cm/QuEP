@@ -1,3 +1,6 @@
+### This File is older. See plotQuasiEr.py and plotQuasiEz.py instead
+
+
 import numpy as np
 import matplotlib.colors as col
 import matplotlib.pyplot as plt

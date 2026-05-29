@@ -1,7 +1,8 @@
-# index.py can be used to propagate objects after simulation through fields in main.py
+# index-mp.py can be used to propagate objects after simulation through fields in main.py
 # Available features include weighting of particles and masking of regions
 
 # Include file imports
+from logging import raiseExceptions
 import sys
 import time
 import importlib
@@ -11,14 +12,14 @@ import include.showFullEvolution as showEvol_F
 import include.makeFullAnimation as makeFullAni
 import include.viewProbe as viewProbe
 import include.writeFullEvolData as writeHist
-import include.weighting_masks_function as weightmaskFunc
+import include.weighting_masks_function_rprism as weightmaskFunc
 import include.plotWeights as plotWeights
 import include.findFocalY as findFocalY
 import include.plot2DTracks as plot2D
 import include.plot3DTracks as plot3D
 import include.findWaist as findWaist
 import multiprocessing as mp
-import include.movieWriter as movieWriter
+#import include.movieWriter as movieWriter
 import tqdm
 import pickle
 from DebugObjectModule import DebugObject
@@ -27,42 +28,46 @@ from random import randint
 
 
 # Be sure to change .npz file name location from main.py output!
+# Put .npz file in /data directory
 
 # Weighting Options (Only applicable for showFullEvolution and makeFullAnimation plot):
-useWeights_x = False                 # Use weights in x-direction
-useWeights_y = False                 # Use weights in y-direction
-singleLayerBeam = False             # Use beam with thickness xden=1 in x-direction
+useWeights_x = False                 # NOT CURRENTLY IN USE - LEAVE FALSE - Use weights in x-direction
+useWeights_y = False                  # Use gaussian weights in y-direction
+useWeights_xi = False                 # Use gaussian weights in xi-direction
 
 skipWeightingCalc = False            # Skip weighting calculation and use imported pre-calculated weights
-saveWeights = False                 # Save weights to .npz file (Remember to move to ./data directory!)
+saveWeights = True                 # Save weights to .npz file (Remember to move to ./data directory!)
 
 # Masking Options:
 useMasks_xi = False                 # Use masks in xi-direction (Vertical; done during weighting)
 useMasks_y = False                  # Use masks in y-direction (Horizontal; done during weighting)
+useMasks_x = False                  # NOT CURRENTLY IN USE - LEAVE FALSE - Use masks in x-direction (transverse; done during weighting)
 
 # Plotting Scripts
 showQuickEvolution = False           # View evolution of probe after leaving plasma at inputted x_s in scatter plots # Use for low density probes
 showFullEvolution = False             # View full evolution of probe at hardcoded locations in colored histograms # Use for high density probes
 makeFullAnimation = False
 writeHistData = False
-plotWeightsy = False                  # Plot w_x vs xi (DONT USE)
-plotWeightsx = False                  # Plot w_y vs y (DONT USE)
+
+# Gaussian Weighting Testing
+plotWeightsx = False                  # Plot w vs xi (ONLY for single line of particles in x-dir)
+plotWeightsy = False                  # Plot w vs y (ONLY for single line of particles in y-dir)
+plotWeightsxi = False                  # Plot w vs y (ONLY for single line of particles in xi-dir)
+plotWeightsxiy = False                 # Plots initial particle density map
+plotWeights3D = False                  # Plots y, xi, and 2D cross section
 
 # DEBUG PLOTTING
-plot2DTracks = True                 # View 2D projections of trajectories (SET ALL OTHERS TO FALSE & ONLY USE FOR SINGLE PARTICLE)
-findFocal = False
+plot2DTracks = False                 # View 2D projections of trajectories (SET ALL OTHERS TO FALSE & ONLY USE FOR SINGLE PARTICLE)
+findFocal = True
 plot3DTracks = False
 findW = False
 
-# Set all others equal False if want animation saved (dependency issue)
-#saveMovie = False                   # Save gif of probe evolution
-#if (saveMovie):
-#    import include.makeAnimation as makeAnimation
+
 
 if __name__ == '__main__':
     # Start of main()
     # Initialize multiprocessing.Pool()
-    numberOfCores = 4#8# mp.cpu_count()
+    numberOfCores = 15 #mp.cpu_count() #mp.cpu_count() #8
     print(f"Number of cores used for multiprocessing: {numberOfCores}")
     pool = mp.get_context('spawn').Pool(numberOfCores)
     if (len(sys.argv) >= 2):
@@ -107,6 +112,7 @@ if __name__ == '__main__':
             beamxi_c = beaminit.beamxi_c
             sigma_x=beaminit.sigma_x
             sigma_y=beaminit.sigma_y
+            sigma_xi=beaminit.sigma_xi
         else:
             print("WARNING: No gaussian weights inputted. Make sure not using weighting!")
 
@@ -142,47 +148,51 @@ if __name__ == '__main__':
             Fz_dat = debug.Fz_dat
             px_dat = debug.px_dat
             py_dat = debug.py_dat
+            pz_dat = debug.pz_dat
+            
+            
 
-        if (singleLayerBeam):
-            xden = 1
-            print("Using single-layer beam")
+        noObj = len(x_0) # Number of particles in the simulation (2D Projection)
 
-        noObj = len(x_0) # Number of particles in the simulation
-
+        # WEIGHTING IMPORTS/SAVING
         rand = "{:02d}".format(randint(0,99))
         weights_fname = fname[:-4] + "-weights-" + rand
-        if (skipWeightingCalc):
-            data = np.load('./data/' + weights_fname + '.npz') # Change this line as needed
-            w = data['w']
-            print(f"\nUsing weights from {'./data/' + weights_fname + '.npz'}...\n")
-        else:
+        #weights_fname = fname + "-weights" 
+        #if (skipWeightingCalc):
+            #data = np.load('./data/' + weights_fname + '.npz') # Change this line as needed
+            #w = data['w']
+           # print(f"\nUsing weights from {'./data/' + weights_fname + '.npz'}...\n")
+        #else:
             # Create weighting array with appropriate masks
-            w = []
-            w = [1 for k in range(0,noObj)]
+           # w = []
+           # w = [1 for k in range(0,noObj)] #Creates default array of weights with length noObj, each with value 1
             
-            start_time_w = time.time()
-            t_w = time.localtime()
-            curr_time_w = time.strftime("%H:%M:%S", t_w)
-            print("\nWeighting calculations - START TIME: ", curr_time_w)
+           # start_time_w = time.time()
+           # t_w = time.localtime()
+           # curr_time_w = time.strftime("%H:%M:%S", t_w)
+           # print("\nWeighting calculations - START TIME: ", curr_time_w)
 
-            if (useWeights_x) or (useWeights_y):
-                w, w_virt, xv, yv, xiv = weightmaskFunc.getWeights(beamx_c,beamy_c,beamxi_c,x_c,y_c,xi_c,s1,s2,xden,yden,xiden,res,sigma_x,sigma_y,noObj,t0,useWeights_x,useWeights_y,useMasks_xi,useMasks_y)    
+            # Call weighting function getWeights 
+            # Note: w_virt, xv, yv, xiv, only used for debugging purposes
+           # w, w_export1, w_y, w_xi = weightmaskFunc.getWeights(beamx_c,beamy_c,beamxi_c,x_c,y_c,xi_c,s1,s2,xden,yden,xiden,res,sigma_x,sigma_y,sigma_xi,noObj,t0,useWeights_x,useWeights_y,useWeights_xi,useMasks_x,useMasks_xi,useMasks_y)    
             
-            t_w_end = time.localtime()
-            curr_time_w_end = time.strftime("%H:%M:%S", t_w_end)
-            print("Weighting calculations - END TIME: ", curr_time_w_end)
-            print("Weighting calculations - DURATION: ", (time.time() - start_time_w)/60, " min\n")
+           # t_w_end = time.localtime()
+           # curr_time_w_end = time.strftime("%H:%M:%S", t_w_end)
+           # print("Weighting calculations - END TIME: ", curr_time_w_end)
+           # print("Weighting calculations - DURATION: ", (time.time() - start_time_w)/60, " min\n")
 
-            if (saveWeights):
-                np.savez(weights_fname, w=w)
-                print(f"\nWeights saved to {weights_fname + '.npz'}\n")
+           # if (saveWeights):
+               # np.savez(weights_fname, w=w)
+              #  print(f"\nWeights saved to {weights_fname + '.npz'}\n") #Saves weights for reuse
 
         # Plot data points
         print("Plotting...")
         if (showQuickEvolution):
             showEvol_Q.plot(x_f, y_f, xi_f, z_f, px_f, py_f, pz_f, sim_name, shape_name, x_s, noObj, iter) # Note: does not use weights
+        
         if (showFullEvolution):
             showEvol_F.plot(x_f, y_f, xi_f, z_f, px_f, py_f, pz_f, w, sim_name, shape_name, noObj, iter)
+        
         if (makeFullAnimation):
             #Prepare plotting variables
             plasma_bnds, slices, xs_norm, yslice, zslice, bin_edges_z, bin_edges_y, cmap, cmin, vmin_, vmax_, zmin, zmax, ymin, ymax, fps, new_path, screen_dists = makeFullAni.prepare(sim_name, shape_name, noObj, rand)
@@ -205,25 +215,41 @@ if __name__ == '__main__':
             print("MP PFC - DURATION: ", (time.time() - start_time_pfc)/60, " min\n")
             
             # Stitch frames into movie
-            movieWriter.generatemovie(fps,new_path)
+            #movieWriter.generatemovie(fps,new_path)
             
         if (writeHistData):
             writeHist.plot(x_f, y_f, xi_f, z_f, px_f, py_f, pz_f, sim_name, shape_name, noObj, iter)
-        if (plotWeightsy):
-            plotWeights.ploty(w_virt,xv,yv,beamx_c,beamy_c,sigma_x,sigma_y)
-        if (plotWeightsx):
-            plotWeights.plotx(w_virt,xv,yv,beamx_c,beamy_c,sigma_x,sigma_y)
         
-        #if (saveMovie):
-        #    makeAnimation.animate(x_f, y_f, xi_f, z_f, px_f, py_f, pz_f, sim_name, shape_name, noObj, iter)
+        if (plotWeightsy):
+            plotWeights.ploty(w_y, x_0, y_0, xi_0, z_0, s1, s2, yden, xiden, beamy_c, sigma_y)
+        
+        if (plotWeightsx):
+            #plotWeights.plotx(w, x_0, y_0, xi_0, z_0, s1, s2, beamx_c,beamy_c,beamxi_c,sigma_x,sigma_y,sigma_xi)
+            raise NotImplementedError("This functionality is not currently implemented")
+            # This function could be easily added when needed
+
+        if (plotWeightsxi):
+            plotWeights.plotxi(w_xi, x_0, y_0, xi_0, z_0, s1, s2, yden, xiden, beamxi_c, sigma_xi)
+
+        if (plotWeightsxiy):
+            # Plots initial map of particle density
+            plotWeights.plotweightsxiy(y_0,xi_0, w, rand)
+        
+        if (plotWeights3D):
+            plotWeights.plotcross(w_export1, x_0, y_0, xi_0, z_0, s1, s2, yden, xiden, beamxi_c, sigma_xi)
+            #plotWeights.ploty(w_y, x_0, y_0, xi_0, z_0, s1, s2, yden, xiden)
+            #plotWeights.plotxi(w_xi, x_0, y_0, xi_0, z_0, s1, s2, yden, xiden)
 
         if (findFocal):
-            findFocalY.calculate(x_0, y_0, xi_0, z_0, x_dat, y_dat, z_dat, xi_dat, px_f, py_f, pz_f, sim_name, shape_name, x_s, s1, s2)
+            findFocalY.calculate(x_0, y_0, xi_0, z_0, x_dat, y_dat, z_dat, xi_dat, px_f, py_f, pz_f, sim_name, shape_name, x_s, s1, s2,px_0,py_0,pz_0)
+        
         if (plot2DTracks):
             print("Plotting 2D Tracks...")
-            plot2D.plot(x_dat, y_dat, z_dat, xi_dat, Fx_dat, Fy_dat, Fz_dat, px_dat, py_dat, sim_name, shape_name, s1, s2, noObj, fname)
+            plot2D.plot(x_dat, y_dat, z_dat, xi_dat, Fx_dat, Fy_dat, Fz_dat, px_dat, py_dat, pz_dat, sim_name, shape_name, s1, s2, noObj, fname)
+        
         if (plot3DTracks):
             plot3D.plot(x_dat,y_dat,z_dat,xi_dat,sim_name,shape_name,s1,s2,noObj)
+        
         if (findW):
             findWaist.calculate(x_0,y_0,xi_0,z_0,x_dat,y_dat,z_dat,xi_dat,px_f,py_f,pz_f,sim_name,shape_name,x_s,s1,s2)
 

@@ -1,3 +1,7 @@
+# IMPORTANT Note:
+# This file is depricated and is only still here for future reference
+# 3D Probes should be made with rprism, keeping in mind size limitations
+
 import sys
 import math
 import numpy as np

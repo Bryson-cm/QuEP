@@ -18,7 +18,17 @@
             "program": "${workspaceFolder}/main.py",
             "console": "integratedTerminal",
             "args": [
-                "input.000010_unitTest"
+                "input.thesis.Eta_Plot.single_arbitrary_eta_02"
+            ]
+        },
+        {
+            "name": "Python: main-nowake.py File",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/main-nowake.py",
+            "console": "integratedTerminal",
+            "args": [
+                "input.thesis.Gaussian_profile_test__1D-y"
             ]
         },
         {
@@ -39,7 +49,18 @@
             "program": "${workspaceFolder}/index-mp.py",
             "console": "integratedTerminal",
             "args": [
-                "input.000020_unitTest-betatron"
+                "input.thesis.Gaussian_profile_test__2D-xi-y",
+                "input.thesis.Gaussian_profile_test__weights"
+            ]
+        },
+        {
+            "name": "Python: index-mp.py No weighting input File",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/index-mp.py",
+            "console": "integratedTerminal",
+            "args": [
+                "input.thesis.group_velocity_tests_001",
             ]
         },
         {
