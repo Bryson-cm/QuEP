@@ -47,9 +47,6 @@ C = 299892458                        # Speed of light in vacuum in m/s
 
 if __name__ == '__main__':
     # Start of main()
-    # Initialize multiprocessing.Pool()
-    pool = mp.Pool(mp.cpu_count())# mp.cpu_count())
-    #@jit(target_backend='cuda')
 
     start_time = time.time()
     t = time.localtime()
@@ -126,24 +123,46 @@ if __name__ == '__main__':
 
         
     
-        x_f, y_f, xi_f, z_f, px_f, py_f, pz_f, Debug = zip(*pool.starmap(eProbe.getTrajectory, [(x_0[i], y_0[i], xi_0[i], px_0, py_0, pz_0, t0, iter, plasma_bnds, mode, sim_name, debugmode, x_s) for i in range(0,noObj)]))
+       # x_f, y_f, xi_f, z_f, px_f, py_f, pz_f, Debug = zip(*pool.starmap(eProbe.getTrajectory, [(x_0[i], y_0[i], xi_0[i], px_0, py_0, pz_0, t0, iter, plasma_bnds, mode, sim_name, debugmode, x_s) for i in range(0,noObj)]))
+        args = [
+            (
+                x_0[i], y_0[i], xi_0[i],
+                px_0, py_0, pz_0,
+                t0, iter, plasma_bnds, mode,
+                sim_name, debugmode, x_s
+            )
+            for i in range(noObj)
+        ]
 
-       
-
+        if noObj == 1:
+            #Single electron section
+            results = [eProbe.getTrajectory(*args[0])]
         
-        pool.close()
+        else:
+            # Initialize multiprocessing.Pool()
+            # A parallelized process is leveraged for multi-electron tests
+            pool = mp.Pool(mp.cpu_count())# mp.cpu_count())
+            #@jit(target_backend='cuda')
+
+            results = pool.starmap(eProbe.getTrajectory, args)
+            pool.close()
+
+        x_f, y_f, xi_f, z_f, px_f, py_f, pz_f, Debug = zip(*results)
+       
 
         tf = time.localtime()
         curr_time_f = time.strftime("%H:%M:%S", tf)
         print("End Time: ", curr_time_f)
         print("Duration: ", (time.time() - start_time)/60, " min")
 
-        np.savez(fname, x_init=x_0, y_init=y_0, xi_init=xi_0, z_init=z_0, x_dat=x_f, y_dat=y_f, xi_dat=xi_f, z_dat=z_f, px_dat=px_f, py_dat=py_f, pz_dat=pz_f, t_dat=t0)
+        np.savez("data/" + fname, x_init=x_0, y_init=y_0, xi_init=xi_0, z_init=z_0, x_dat=x_f, y_dat=y_f, xi_dat=xi_f, z_dat=z_f, px_dat=px_f, py_dat=py_f, pz_dat=pz_f, t_dat=t0)
         
         if debugmode == True:
-            debugname = fname[:-4]+"-DEBUG.obj"
-            filehandler = open(debugname, 'wb')
-            pickle.dump(Debug,filehandler)
+            debugname = "data/" + fname[:-4]+"-DEBUG.obj"
+            #filehandler = open(debugname, 'wb')
+            #pickle.dump(Debug,filehandler)
+            with open(debugname, "wb") as filehandler:
+                pickle.dump(Debug, filehandler)
             print(f"Debug object saved to {debugname}")
 
     else:

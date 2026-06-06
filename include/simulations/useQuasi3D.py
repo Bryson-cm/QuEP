@@ -1,7 +1,9 @@
+'''
 # This file retrieves the fields from OSIRIS Quasi3D data files stored within the data/ folder.
 # Expresses EM fields in azimuthal harmonics up to the first order
 # Functions that MUST be updated for any new simulation (i.e. Called in either main.py or eProbe.py) are designated with three asterisks ***
 # All other functions are used for either reading out data or plotting results
+'''
 
 import sys
 import h5py as h5
