@@ -30,9 +30,29 @@ EC = 1.60217662e-19                   # Electron charge in C
 EP_0 = 8.854187817e-12                # Vacuum permittivity in C/(V m)
 C = 299892458                         # Speed of light in vacuum in m/s
 
-Quasi_ID = '000130' #'000067' is for a0 = 4 matched density data
-                    #'000130' is for 1e15 density data
-                    #'000144' or '000232' are for 1e17 density data (at different times in run)
+# Quasi_ID = '000130' #'000067' is for a0 = 4 matched density data
+#                     #'000130' is for 1e15 density data
+#                     #'000144' or '000232' are for 1e17 density data (at different times in run)
+
+
+def configure(init):
+    global Quasi_ID
+    global Quasi_data_dir
+    global Quasi_density
+    global Quasi_propagation_speed
+    Quasi_ID = init.quasi_id
+    Quasi_data_dir = getattr(init, "quasi_data_dir", "data/OSIRIS/Quasi3D")
+    Quasi_density = init.quasi_density
+    Quasi_propagation_speed = getattr(init, "quasi_propagation_speed", 1.0)
+    load_data()
+
+def qpath(stem):
+
+    if Quasi_ID is None:
+
+        raise ValueError("useQuasi3D has not been configured. Call configure(init) first.")
+
+    return f"{Quasi_data_dir}/{stem}-{Quasi_ID}.h5"
 
 def getField(fpath): 
     f = h5.File(fpath,"r")
@@ -42,34 +62,40 @@ def getField(fpath):
     return Field_dat
 
 def getTime(): # ***
-    f = h5.File('data/OSIRIS/Quasi3D/b1_cyl_m-0-re-'+ Quasi_ID + '.h5',"r")
+    # f = h5.File('data/OSIRIS/Quasi3D/b1_cyl_m-0-re-'+ Quasi_ID + '.h5',"r")
+    f = h5.File(qpath("b1_cyl_m-0-re"), "r")
     t0 = f.attrs['TIME']
     t0 = t0[0]
     return t0
 
 def getPlasDensity(): 
-    if (Quasi_ID == '000130'):
-        return 1e21
-    elif (Quasi_ID == '000067'):
-        return 1.1e16
-    else:
-        return 3e23
+    if Quasi_density is None:
+        raise ValueError("quasi_density must be set in the input file.")
+    return Quasi_density
+#     if (Quasi_ID == '000130'):
+#         return 1e21
+#     elif (Quasi_ID == '000067'):
+#         return 1.1e16
+#     else:
+#         return 3e23
 
 def getPropagationSpeed(): # Define the group velocity of the laser
-    if (Quasi_ID == '000130'):
-        return 1.000 #THIS IS INCORRECT, JUST FOR TESTING
-    elif (Quasi_ID == '000067'):
-        return 0.9958959
-    else:
-        return 1
+    return Quasi_propagation_speed
+#     if (Quasi_ID == '000130'):
+#         return 1.000 #THIS IS INCORRECT, JUST FOR TESTING
+#     elif (Quasi_ID == '000067'):
+#         return 0.9958959
+#     else:
+#         return 1
 
 def getPlasFreq(): 
-    N_0 = getPlasDensity()
+    N_0 = Quasi_density
     return math.sqrt(EC**2 * N_0 / (M_E * EP_0))
 
 def axes(): 
 # Retrieve axes boundaries under staggered mesh
-    f = h5.File('data/OSIRIS/Quasi3D/b1_cyl_m-0-re-'+ Quasi_ID + '.h5',"r")
+    # f = h5.File('data/OSIRIS/Quasi3D/b1_cyl_m-0-re-'+ Quasi_ID + '.h5',"r")
+    f = h5.File(qpath("b1_cyl_m-0-re"), "r")
     datasetNames = [n for n in f.keys()] # Three Datasets: AXIS, SIMULATION, Field data
     field = datasetNames[-1]
     Field_dat = f[field][:].astype(float)
@@ -92,11 +118,12 @@ def axes():
 
     return xiaxis_1, xiaxis_2, raxis_1, raxis_2
 
-xiaxis_1, xiaxis_2, raxis_1, raxis_2 = axes() # Evenly spaced axes data
+#xiaxis_1, xiaxis_2, raxis_1, raxis_2 = axes() # Evenly spaced axes data
 
 def getBoundCond(): # ***
 # Define when the electron leaves the plasma cell
-    f = h5.File('data/OSIRIS/Quasi3D/b1_cyl_m-0-re-'+ Quasi_ID + '.h5',"r")
+    # f = h5.File('data/OSIRIS/Quasi3D/b1_cyl_m-0-re-'+ Quasi_ID + '.h5',"r")
+    f = h5.File(qpath("b1_cyl_m-0-re"), "r")
     datasetNames = [n for n in f.keys()] # Three Datasets: AXIS, SIMULATION, Field data
     field = datasetNames[-1]
     Field_dat = f[field][:].astype(float)
@@ -110,33 +137,64 @@ def getBoundCond(): # ***
 # E1 - z
 # E2 - r
 # E3 - phi
+def load_data():
+    global xiaxis_1, xiaxis_2, raxis_1, raxis_2
+    global E1_M0, E2_M0, E3_M0
+    global E1_M1_Re, E2_M1_Re, E3_M1_Re
+    global E1_M1_Im, E2_M1_Im, E3_M1_Im
+    global B1_M0, B2_M0, B3_M0
+    global B1_M1_Re, B2_M1_Re, B3_M1_Re
+    global B1_M1_Im, B2_M1_Im, B3_M1_Im
+    xiaxis_1, xiaxis_2, raxis_1, raxis_2 = axes()
+    E1_M0 = getE1_M0()
+    E2_M0 = getE2_M0()
+    E3_M0 = getE3_M0()
+    E1_M1_Re = getE1_M1_Re()
+    E2_M1_Re = getE2_M1_Re()
+    E3_M1_Re = getE3_M1_Re()
+    E1_M1_Im = getE1_M1_Im()
+    E2_M1_Im = getE2_M1_Im()
+    E3_M1_Im = getE3_M1_Im()
+    B1_M0 = getB1_M0()
+    B2_M0 = getB2_M0()
+    B3_M0 = getB3_M0()
+    B1_M1_Re = getB1_M1_Re()
+    B2_M1_Re = getB2_M1_Re()
+    B3_M1_Re = getB3_M1_Re()
+    B1_M1_Im = getB1_M1_Im()
+    B2_M1_Im = getB2_M1_Im()
+    B3_M1_Im = getB3_M1_Im()
+
 
 def getE1_M0():
-    return getField('data/OSIRIS/Quasi3D/e1_cyl_m-0-re-'+ Quasi_ID + '.h5')
+    return getField(qpath("e1_cyl_m-0-re"))
 
 def getE2_M0():
-    return getField('data/OSIRIS/Quasi3D/e2_cyl_m-0-re-'+ Quasi_ID + '.h5')
+    return getField(qpath("e2_cyl_m-0-re"))
 
 def getE3_M0():
-    return getField('data/OSIRIS/Quasi3D/e3_cyl_m-0-re-'+ Quasi_ID + '.h5')
+    return getField(qpath("e3_cyl_m-0-re"))
+
+# def getE1_M0():
+#     return getField('data/OSIRIS/Quasi3D/e1_cyl_m-0-re-'+ Quasi_ID + '.h5')
 
 def getE1_M1_Re():
-    return getField('data/OSIRIS/Quasi3D/e1_cyl_m-1-re-'+ Quasi_ID + '.h5')
-
+    return getField(qpath("e1_cyl_m-1-re"))
+    
 def getE2_M1_Re():
-    return getField('data/OSIRIS/Quasi3D/e2_cyl_m-1-re-'+ Quasi_ID + '.h5')
+    return getField(qpath("e2_cyl_m-1-re"))
 
 def getE3_M1_Re():
-    return getField('data/OSIRIS/Quasi3D/e3_cyl_m-1-re-'+ Quasi_ID + '.h5')
+    return getField(qpath("e3_cyl_m-1-re"))
 
 def getE1_M1_Im():
-    return getField('data/OSIRIS/Quasi3D/e1_cyl_m-1-im-'+ Quasi_ID + '.h5')
+    return getField(qpath("e1_cyl_m-1-im"))
 
 def getE2_M1_Im():
-    return getField('data/OSIRIS/Quasi3D/e2_cyl_m-1-im-'+ Quasi_ID + '.h5')
+    return getField(qpath("e2_cyl_m-1-im"))
 
 def getE3_M1_Im():
-    return getField('data/OSIRIS/Quasi3D/e3_cyl_m-1-im-'+ Quasi_ID + '.h5')
+    return getField(qpath("e3_cyl_m-1-im"))
 
 # Return Magnetic Field components
 # B1 - z
@@ -144,76 +202,76 @@ def getE3_M1_Im():
 # B3 - phi
 
 def getB1_M0():
-    return getField('data/OSIRIS/Quasi3D/b1_cyl_m-0-re-'+ Quasi_ID + '.h5')
-
+    return getField(qpath("b1_cyl_m-0-re"))
+    
 def getB2_M0():
-    return getField('data/OSIRIS/Quasi3D/b2_cyl_m-0-re-'+ Quasi_ID + '.h5')
+    return getField(qpath("b2_cyl_m-0-re"))
 
 def getB3_M0():
-    return getField('data/OSIRIS/Quasi3D/b3_cyl_m-0-re-'+ Quasi_ID + '.h5')
+    return getField(qpath("b3_cyl_m-0-re"))
 
 def getB1_M1_Re():
-    return getField('data/OSIRIS/Quasi3D/b1_cyl_m-1-re-'+ Quasi_ID + '.h5')
+    return getField(qpath("b1_cyl_m-1-re"))
 
 def getB2_M1_Re():
-    return getField('data/OSIRIS/Quasi3D/b2_cyl_m-1-re-'+ Quasi_ID + '.h5')
+    return getField(qpath("b2_cyl_m-1-re"))
 
 def getB3_M1_Re():
-    return getField('data/OSIRIS/Quasi3D/b3_cyl_m-1-re-'+ Quasi_ID + '.h5')
+    return getField(qpath("b3_cyl_m-1-re"))
 
 def getB1_M1_Im():
-    return getField('data/OSIRIS/Quasi3D/b1_cyl_m-1-im-'+ Quasi_ID + '.h5')
+    return getField(qpath("b1_cyl_m-1-im"))
 
 def getB2_M1_Im():
-    return getField('data/OSIRIS/Quasi3D/b2_cyl_m-1-im-'+ Quasi_ID + '.h5')
+    return getField(qpath("b2_cyl_m-1-im"))
 
 def getB3_M1_Im():
-    return getField('data/OSIRIS/Quasi3D/b3_cyl_m-1-im-'+ Quasi_ID + '.h5')
+    return getField(qpath("b3_cyl_m-1-im"))
 
 def getchargeElectrons_M0():
-    return getField('data/OSIRIS/Quasi3D/charge_cyl_m-electrons-0-re-'+ Quasi_ID + '.h5')
+    return getField(qpath("charge_cyl_m-electrons-0-re"))
 
 def getchargeElectrons_M1_Re():
-    return getField('data/OSIRIS/Quasi3D/charge_cyl_m-electrons-1-re-'+ Quasi_ID + '.h5')
+    return getField(qpath("charge_cyl_m-electrons-1-re"))
 
 def getchargeElectrons_M1_Im():
-    return getField('data/OSIRIS/Quasi3D/charge_cyl_m-electrons-1-im-'+ Quasi_ID + '.h5')
+    return getField(qpath("charge_cyl_m-electrons-1-im"))
 
 def getchargeIons_M0():
-    return getField('data/OSIRIS/Quasi3D/charge_cyl_m-ions-0-re-'+ Quasi_ID + '.h5')
+    return getField(qpath("charge_cyl_m-ions-0-re"))
 
 def getchargeIons_M1_Re():
-    return getField('data/OSIRIS/Quasi3D/charge_cyl_m-ions-1-re-'+ Quasi_ID + '.h5')
+    return getField(qpath("charge_cyl_m-ions-1-re"))
 
 def getchargeIons_M1_Im():
-    return getField('data/OSIRIS/Quasi3D/charge_cyl_m-ions-1-im-'+ Quasi_ID + '.h5')
+    return getField(qpath("charge_cyl_m-ions-1-im"))
 
-E1_M0 = getE1_M0()
-E2_M0 = getE2_M0()
-E3_M0 = getE3_M0()
-E1_M1_Re = getE1_M1_Re()
-E2_M1_Re = getE2_M1_Re()
-E3_M1_Re = getE3_M1_Re()
-E1_M1_Im = getE1_M1_Im()
-E2_M1_Im = getE2_M1_Im()
-E3_M1_Im = getE3_M1_Im()
-B1_M0 = getB1_M0()
-B2_M0 = getB2_M0()
-B3_M0 = getB3_M0()
-B1_M1_Re = getB1_M1_Re()
-B2_M1_Re = getB2_M1_Re()
-B3_M1_Re = getB3_M1_Re()
-B1_M1_Im = getB1_M1_Im()
-B2_M1_Im = getB2_M1_Im()
-B3_M1_Im = getB3_M1_Im()
+# E1_M0 = getE1_M0()
+# E2_M0 = getE2_M0()
+# E3_M0 = getE3_M0()
+# E1_M1_Re = getE1_M1_Re()
+# E2_M1_Re = getE2_M1_Re()
+# E3_M1_Re = getE3_M1_Re()
+# E1_M1_Im = getE1_M1_Im()
+# E2_M1_Im = getE2_M1_Im()
+# E3_M1_Im = getE3_M1_Im()
+# B1_M0 = getB1_M0()
+# B2_M0 = getB2_M0()
+# B3_M0 = getB3_M0()
+# B1_M1_Re = getB1_M1_Re()
+# B2_M1_Re = getB2_M1_Re()
+# B3_M1_Re = getB3_M1_Re()
+# B1_M1_Im = getB1_M1_Im()
+# B2_M1_Im = getB2_M1_Im()
+# B3_M1_Im = getB3_M1_Im()
 
-if Quasi_ID=="000067":
-    chargeElectrons_M0 = getchargeElectrons_M0()
-    chargeElectrons_M1_Re = getchargeElectrons_M1_Re()
-    chargeElectrons_M1_Im = getchargeElectrons_M1_Im()
-    chargeIons_M0 = getchargeIons_M0()
-    chargeIons_M1_Re = getchargeIons_M1_Re()
-    chargeIons_M1_Im = getchargeIons_M1_Im()
+# if Quasi_ID=="000067":
+#     chargeElectrons_M0 = getchargeElectrons_M0()
+#     chargeElectrons_M1_Re = getchargeElectrons_M1_Re()
+#     chargeElectrons_M1_Im = getchargeElectrons_M1_Im()
+#     chargeIons_M0 = getchargeIons_M0()
+#     chargeIons_M1_Re = getchargeIons_M1_Re()
+#     chargeIons_M1_Im = getchargeIons_M1_Im()
 
 
 def getPhi(x,y):

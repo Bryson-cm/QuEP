@@ -88,6 +88,9 @@ if __name__ == '__main__':
             print("Simulation name unrecognized. Quitting...")
             exit()
 
+        # Configure the simulation module using parameters from the user input file
+        sim.configure(init)
+
         t0 = sim.getTime()
         plasma_bnds = sim.getBoundCond()
 
@@ -129,7 +132,8 @@ if __name__ == '__main__':
                 x_0[i], y_0[i], xi_0[i],
                 px_0, py_0, pz_0,
                 t0, iter, plasma_bnds, mode,
-                sim_name, debugmode, x_s
+                sim_name, debugmode, x_s,
+                input_fname
             )
             for i in range(noObj)
         ]

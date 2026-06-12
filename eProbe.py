@@ -134,7 +134,8 @@ def getArrayForm(x_dat_, y_dat_, z_dat_, xi_dat_, Fx_dat_, Fy_dat_, Fz_dat_, px_
     pz_dat[0,:] = pz_dat_
     return x_dat, y_dat, z_dat, xi_dat, Fx_dat, Fy_dat, Fz_dat, px_dat, py_dat, pz_dat
 
-def getTrajectory(x_0,y_0,xi_0,px_0,py_0,pz_0,t0,iter,plasma_bnds,mode,sim_name,debugmode, x_s):
+def getTrajectory(x_0,y_0,xi_0,px_0,py_0,pz_0,t0,iter,plasma_bnds,
+                  mode,sim_name,debugmode, x_s,input_fname):
 # Returns array of x, y, xi, z, and final x, y, xi, z, px, py, pz
     if (sim_name.upper() == 'OSIRIS_CYLINSYMM'):
         import include.simulations.useOsiCylin as sim
@@ -144,6 +145,9 @@ def getTrajectory(x_0,y_0,xi_0,px_0,py_0,pz_0,t0,iter,plasma_bnds,mode,sim_name,
         print("Simulation name unrecognized. Quitting...")
         exit()
 
+    import importlib
+    init = importlib.import_module(input_fname)
+    sim.configure(init)
 
     propspeed = sim.getPropagationSpeed()
 
