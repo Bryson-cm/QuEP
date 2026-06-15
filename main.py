@@ -57,7 +57,14 @@ if __name__ == '__main__':
     # Initialize probe
         input_fname = str(sys.argv[1])
         print("Using initial conditions from ", input_fname)
+
+        #force the code to read the current input file every time
+        importlib.invalidate_caches()
+        if input_fname in sys.modules:
+            del sys.modules[input_fname]
+
         init = importlib.import_module(input_fname)
+
         sim_name = init.simulation_name
         shape_name = init.shape
         xden = init.xdensity
@@ -132,24 +139,30 @@ if __name__ == '__main__':
                 x_0[i], y_0[i], xi_0[i],
                 px_0, py_0, pz_0,
                 t0, iter, plasma_bnds, mode,
-                sim_name, debugmode, x_s,
-                input_fname
+                debugmode, x_s,
             )
             for i in range(noObj)
         ]
 
+        eProbe.init_worker(sim_name, input_fname)
+
         if noObj == 1:
             #Single electron section
             results = [eProbe.getTrajectory(*args[0])]
-        
         else:
             # Initialize multiprocessing.Pool()
             # A parallelized process is leveraged for multi-electron tests
-            pool = mp.Pool(mp.cpu_count())# mp.cpu_count())
+            # pool = mp.Pool(mp.cpu_count())# mp.cpu_count())
             #@jit(target_backend='cuda')
 
-            results = pool.starmap(eProbe.getTrajectory, args)
-            pool.close()
+            # results = pool.starmap(eProbe.getTrajectory, args)
+            # pool.close()
+            with mp.Pool(
+                mp.cpu_count(),
+                initializer=eProbe.init_worker,
+                initargs=(sim_name, input_fname)
+            ) as pool:
+                results = pool.starmap(eProbe.getTrajectory, args)
 
         x_f, y_f, xi_f, z_f, px_f, py_f, pz_f, Debug = zip(*results)
        

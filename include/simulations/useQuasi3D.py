@@ -5,11 +5,11 @@
 # All other functions are used for either reading out data or plotting results
 '''
 
-import sys
+# import sys
 import h5py as h5
 import numpy as np
 import math
-import pdb
+# import pdb
 
 # Coordinate System
 # z   - Direction of laser propagation (longitudinal)
@@ -30,43 +30,52 @@ EC = 1.60217662e-19                   # Electron charge in C
 EP_0 = 8.854187817e-12                # Vacuum permittivity in C/(V m)
 C = 299892458                         # Speed of light in vacuum in m/s
 
-# Quasi_ID = '000130' #'000067' is for a0 = 4 matched density data
-#                     #'000130' is for 1e15 density data
-#                     #'000144' or '000232' are for 1e17 density data (at different times in run)
 
+Quasi_ID = None
+Quasi_data_dir = None
+Quasi_density = None
+Quasi_propagation_speed = 1.0
+Quasi_dt = None
+Quasi_dt_safety_factor = 0.5
+_reference_grid_info = None
 
 def configure(init):
     global Quasi_ID
     global Quasi_data_dir
     global Quasi_density
     global Quasi_propagation_speed
+    global Quasi_dt
+    global Quasi_dt_safety_factor
+    global _reference_grid_info
+
+
     Quasi_ID = init.quasi_id
     Quasi_data_dir = getattr(init, "quasi_data_dir", "data/OSIRIS/Quasi3D")
     Quasi_density = init.quasi_density
     Quasi_propagation_speed = getattr(init, "quasi_propagation_speed", 1.0)
+    Quasi_dt = getattr(init, "dt", None)
+    Quasi_dt_safety_factor = getattr(init, "dt_safety_factor", 0.5)
+    
+    _reference_grid_info = None
+    
     load_data()
 
 def qpath(stem):
-
     if Quasi_ID is None:
-
         raise ValueError("useQuasi3D has not been configured. Call configure(init) first.")
-
     return f"{Quasi_data_dir}/{stem}-{Quasi_ID}.h5"
 
 def getField(fpath): 
-    f = h5.File(fpath,"r")
-    datasetNames = [n for n in f.keys()]
-    field = datasetNames[-1]
-    Field_dat = f[field][:].astype(float)
-    return Field_dat
+    with h5.File(fpath, "r") as f:
+        datasetNames = [n for n in f.keys()]
+        field = datasetNames[-1]
+        return f[field][:].astype(float)
+
 
 def getTime(): # ***
-    # f = h5.File('data/OSIRIS/Quasi3D/b1_cyl_m-0-re-'+ Quasi_ID + '.h5',"r")
-    f = h5.File(qpath("b1_cyl_m-0-re"), "r")
-    t0 = f.attrs['TIME']
-    t0 = t0[0]
-    return t0
+    with h5.File(qpath("b1_cyl_m-0-re"), "r") as f:
+        return f.attrs["TIME"][0]
+ 
 
 def getPlasDensity(): 
     if Quasi_density is None:
@@ -89,49 +98,145 @@ def getPropagationSpeed(): # Define the group velocity of the laser
 #         return 1
 
 def getPlasFreq(): 
-    N_0 = Quasi_density
+    N_0 = getPlasDensity()
     return math.sqrt(EC**2 * N_0 / (M_E * EP_0))
 
-def axes(): 
-# Retrieve axes boundaries under staggered mesh
-    # f = h5.File('data/OSIRIS/Quasi3D/b1_cyl_m-0-re-'+ Quasi_ID + '.h5',"r")
-    f = h5.File(qpath("b1_cyl_m-0-re"), "r")
-    datasetNames = [n for n in f.keys()] # Three Datasets: AXIS, SIMULATION, Field data
-    field = datasetNames[-1]
-    Field_dat = f[field][:].astype(float)
-    a1_bounds = f['AXIS']['AXIS1'] # zmin and zmax
-    a2_bounds = f['AXIS']['AXIS2'] # rmin and rmax - dr/2
-    dz = 9.908e-4 # Width of each cell
-    dr = 6.59e-3
-# Account for specific definitions of bottom-left values for each field component
-    z_bounds_1 = [a1_bounds[0], a1_bounds[1]] # Used for E1, B1
-    z_bounds_2 = [a1_bounds[0] - dz/2, a1_bounds[1] + dz/2] # Used for E2, E3, B2, B3
-    r_bounds_1 = [a2_bounds[0], a2_bounds[1] + dr/2] # Used for E2, B2
-    r_bounds_2 = [a2_bounds[0] - dr/2, a2_bounds[1] + dr] # Used for E1, E3, B1, B3
-    t0 = getTime()#f.attrs['TIME']
+def _get_reference_grid_info():
+    """
+    Read and cache reference grid information from the B1 m=0 file.
+    The reference file is used only to infer the grid geometry:
+    axis bounds, number of grid points, and grid spacing.
+    """
+    global _reference_grid_info
 
-# Field Shape is (433, 25231), where data is written as E(r,z)
-    xiaxis_1 = np.linspace(z_bounds_1[0] - t0, z_bounds_1[1] - t0, len(Field_dat[0]))
-    xiaxis_2 = np.linspace(z_bounds_2[0] - t0, z_bounds_2[1] - t0, len(Field_dat[0]))
-    raxis_1 = np.linspace(r_bounds_1[0], r_bounds_2[1], len(Field_dat))
-    raxis_2 = np.linspace(r_bounds_2[0], r_bounds_2[1], len(Field_dat))
+    if _reference_grid_info is not None:
+        return _reference_grid_info
 
+    with h5.File(qpath("b1_cyl_m-0-re"), "r") as f:
+        datasetNames = [n for n in f.keys()]
+        field = datasetNames[-1]
+
+        field_shape = f[field].shape
+        a1_bounds = f["AXIS"]["AXIS1"][:]
+        a2_bounds = f["AXIS"]["AXIS2"][:]
+
+    # Field data is written as Field_dat[r, z]
+    nr = field_shape[0]
+    nz = field_shape[1]
+
+    dz = (a1_bounds[1] - a1_bounds[0]) / nz
+    dr = (a2_bounds[1] - a2_bounds[0]) / nr
+
+    _reference_grid_info = {
+        "a1_bounds": a1_bounds,
+        "a2_bounds": a2_bounds,
+        "nr": nr,
+        "nz": nz,
+        "dz": dz,
+        "dr": dr,
+    }
+    return _reference_grid_info
+
+def getGridSpacing():
+    """
+    Return longitudinal and radial grid spacing.
+    Returns
+    -------
+    dz : float
+        Longitudinal grid spacing.
+    dr : float
+        Radial grid spacing.
+    """
+    grid = _get_reference_grid_info()
+    return grid["dz"], grid["dr"]
+
+def axes():
+    """
+    Retrieve xi and r axes, accounting for the staggered mesh.
+    xiaxis_1 is used for E1, B1.
+    xiaxis_2 is used for E2, E3, B2, B3.
+    raxis_1 is used for E2, B2.
+    raxis_2 is used for E1, E3, B1, B3.
+    """
+    grid = _get_reference_grid_info()
+
+    a1_bounds = grid["a1_bounds"]
+    a2_bounds = grid["a2_bounds"]
+    nr = grid["nr"]
+    nz = grid["nz"]
+    dz = grid["dz"]
+    dr = grid["dr"]
+
+    t0 = getTime()
+
+    z_bounds_1 = [a1_bounds[0], a1_bounds[1]]
+    z_bounds_2 = [a1_bounds[0] - dz / 2, a1_bounds[1] + dz / 2]
+
+    r_bounds_1 = [a2_bounds[0], a2_bounds[1] + dr / 2]
+    r_bounds_2 = [a2_bounds[0] - dr / 2, a2_bounds[1] + dr]
+
+    xiaxis_1 = np.linspace(
+        z_bounds_1[0] - t0,
+        z_bounds_1[1] - t0,
+        nz
+    )
+
+    xiaxis_2 = np.linspace(
+        z_bounds_2[0] - t0,
+        z_bounds_2[1] - t0,
+        nz
+    )
+
+    raxis_1 = np.linspace(
+        r_bounds_1[0],
+        r_bounds_1[1],
+        nr
+    )
+
+    raxis_2 = np.linspace(
+        r_bounds_2[0],
+        r_bounds_2[1],
+        nr
+    )
     return xiaxis_1, xiaxis_2, raxis_1, raxis_2
 
-#xiaxis_1, xiaxis_2, raxis_1, raxis_2 = axes() # Evenly spaced axes data
+def getDt():
+    """
+    Return the timestep for probe integration.
+    If the user provides dt in the input file, use that value.
+    Otherwise, estimate dt from the field grid spacing using
+    dt_safety_factor * min(dz, dr).
+    """
+    if Quasi_dt is not None:
+        return Quasi_dt
+
+    dz, dr = getGridSpacing()
+
+    return Quasi_dt_safety_factor * abs(dz)
+
 
 def getBoundCond(): # ***
-# Define when the electron leaves the plasma cell
-    # f = h5.File('data/OSIRIS/Quasi3D/b1_cyl_m-0-re-'+ Quasi_ID + '.h5',"r")
-    f = h5.File(qpath("b1_cyl_m-0-re"), "r")
-    datasetNames = [n for n in f.keys()] # Three Datasets: AXIS, SIMULATION, Field data
-    field = datasetNames[-1]
-    Field_dat = f[field][:].astype(float)
-    a1_bounds = f['AXIS']['AXIS1'] # zmin and zmax
-    a2_bounds = f['AXIS']['AXIS2'] # rmin and rmax - dr/2
-    dr = 6.59e-3
-    t0 = getTime() # Call getTime func to get sim time
-    return [a1_bounds[0] - t0, a1_bounds[1] - t0, a2_bounds[1] + dr/2] # ximin, ximax, rmax
+    """
+    Define when the electron leaves the simulation domain.
+    Returns
+    -------
+    list
+        [xi_min, xi_max, r_max]
+    """
+    grid = _get_reference_grid_info()
+
+    a1_bounds = grid["a1_bounds"]
+    a2_bounds = grid["a2_bounds"]
+    dr = grid["dr"]
+
+    t0 = getTime()
+
+    xi_min = a1_bounds[0] - t0
+    xi_max = a1_bounds[1] - t0
+    r_max = a2_bounds[1] + dr / 2
+
+    return [xi_min, xi_max, r_max]
+
 
 # Return cylindrical Electric field components
 # E1 - z
@@ -246,145 +351,329 @@ def getchargeIons_M1_Re():
 def getchargeIons_M1_Im():
     return getField(qpath("charge_cyl_m-ions-1-im"))
 
-# E1_M0 = getE1_M0()
-# E2_M0 = getE2_M0()
-# E3_M0 = getE3_M0()
-# E1_M1_Re = getE1_M1_Re()
-# E2_M1_Re = getE2_M1_Re()
-# E3_M1_Re = getE3_M1_Re()
-# E1_M1_Im = getE1_M1_Im()
-# E2_M1_Im = getE2_M1_Im()
-# E3_M1_Im = getE3_M1_Im()
-# B1_M0 = getB1_M0()
-# B2_M0 = getB2_M0()
-# B3_M0 = getB3_M0()
-# B1_M1_Re = getB1_M1_Re()
-# B2_M1_Re = getB2_M1_Re()
-# B3_M1_Re = getB3_M1_Re()
-# B1_M1_Im = getB1_M1_Im()
-# B2_M1_Im = getB2_M1_Im()
-# B3_M1_Im = getB3_M1_Im()
-
-# if Quasi_ID=="000067":
-#     chargeElectrons_M0 = getchargeElectrons_M0()
-#     chargeElectrons_M1_Re = getchargeElectrons_M1_Re()
-#     chargeElectrons_M1_Im = getchargeElectrons_M1_Im()
-#     chargeIons_M0 = getchargeIons_M0()
-#     chargeIons_M1_Re = getchargeIons_M1_Re()
-#     chargeIons_M1_Im = getchargeIons_M1_Im()
-
 
 def getPhi(x,y):
     return math.atan2(y,x) # From -pi to pi
 
 def find_nearest_index(array,value):
+    # idx = np.searchsorted(array, value, side="right")
+    # if idx > 0 and (idx == len(array) or math.fabs(value - array[idx-1]) < math.fabs(value - array[idx])):
+    #     return idx-1
+    # else:
+    #     return idx
+    if value < array[0] or value > array[-1]:
+        raise ValueError(
+            f"Value {value} is outside axis range [{array[0]}, {array[-1]}]"
+        )
     idx = np.searchsorted(array, value, side="right")
-    if idx > 0 and (idx == len(array) or math.fabs(value - array[idx-1]) < math.fabs(value - array[idx])):
-        return idx-1
-    else:
-        return idx
+    if idx == len(array):
+        return len(array) - 1
+    if idx > 0 and abs(value - array[idx - 1]) < abs(value - array[idx]):
+        return idx - 1
+    return idx
 
-def EField(axis,x,y,xi,r,vx=-1,vy=-1,vz=-1,vr=-1,vphi=-1,mode=-1): # ***
-# axis = 1 refers to z-axis field
-# axis = 2 refers to x-axis field
-# axis = 3 refers to y-axis field
-# mode = 0 refers to LWF effects only
-# mode = 1 refers to laser effects only
-# mode = any other integer uses LWF + laser effects
-    phi = getPhi(x,y)
+def EField(axis, x, y, xi, r, vx=-1, vy=-1, vz=-1, vr=-1, vphi=-1, mode=-1): # ***
+    """
+    # axis = 1 refers to z-axis field
+    # axis = 2 refers to x-axis field
+    # axis = 3 refers to y-axis field
+    # mode = 0 refers to LWF effects only
+    # mode = 1 refers to laser effects only
+    # mode = any other integer uses LWF + laser effects
+
+    """
+    phi = getPhi(x, y)
     cos = math.cos(phi)
     sin = math.sin(phi)
-    xiDex1 = find_nearest_index(xiaxis_1, xi)
-    xiDex2 = find_nearest_index(xiaxis_2, xi)
-    rDex1 = find_nearest_index(raxis_1, r)
-    rDex2 = find_nearest_index(raxis_2, r)
-    # Return expanded EFields
-    if (mode == 0):
-        if (axis == 1):
-            return E1_M0[rDex2, xiDex1]
-        elif (axis == 2):
-            return E2_M0[rDex1, xiDex2]*cos - E3_M0[rDex2, xiDex2]*sin
-        elif (axis == 3):
-            return E3_M0[rDex2, xiDex2]*cos + E2_M0[rDex1, xiDex2]*sin
-    elif (mode == 1):
-        if (axis == 1):
-            return E1_M1_Re[rDex2, xiDex1]*cos + E1_M1_Im[rDex2, xiDex1]*sin
-        elif (axis == 2):
-            return E2_M1_Re[rDex1, xiDex2]*cos**2 - E3_M1_Re[rDex2, xiDex2]*cos*sin + E2_M1_Im[rDex1, xiDex2]*cos*sin - E3_M1_Im[rDex2, xiDex2]*sin**2
-        elif (axis == 3):
-            return E3_M1_Re[rDex2, xiDex2]*cos**2 + E2_M1_Re[rDex1, xiDex2]*cos*sin + E3_M1_Im[rDex2, xiDex2]*cos*sin + E2_M1_Im[rDex1, xiDex2]*sin**2
-    else:
-        if (axis == 1):
-            return E1_M0[rDex2, xiDex1] + E1_M1_Re[rDex2, xiDex1]*cos + E1_M1_Im[rDex2, xiDex1]*sin
-        elif (axis == 2):
-            return E2_M0[rDex1, xiDex2]*cos - E3_M0[rDex2, xiDex2]*sin + E2_M1_Re[rDex1, xiDex2]*cos**2 - E3_M1_Re[rDex2, xiDex2]*cos*sin + E2_M1_Im[rDex1, xiDex2]*cos*sin - E3_M1_Im[rDex2, xiDex2]*sin**2
-        elif (axis == 3):
-            return E3_M0[rDex2, xiDex2]*cos + E2_M0[rDex1, xiDex2]*sin + E3_M1_Re[rDex2, xiDex2]*cos**2 + E2_M1_Re[rDex1, xiDex2]*cos*sin + E3_M1_Im[rDex2, xiDex2]*cos*sin + E2_M1_Im[rDex1, xiDex2]*sin**2
 
-def BForce(axis,x,y,xi,r,vx=-1,vy=-1,vz=-1,vr=-1,vphi=-1,mode=-1): # ***
-# axis = 1 refers to z-axis field
-# axis = 2 refers to x-axis field
-# axis = 3 refers to y-axis field
-    phi = getPhi(x,y)
+    # Interpolate M0 electric fields.
+    E1_0 = interp2(E1_M0, xiaxis_1, raxis_2, xi, r)
+    E2_0 = interp2(E2_M0, xiaxis_2, raxis_1, xi, r)
+    E3_0 = interp2(E3_M0, xiaxis_2, raxis_2, xi, r)
+
+    # Interpolate M1 real electric fields.
+    E1_1_re = interp2(E1_M1_Re, xiaxis_1, raxis_2, xi, r)
+    E2_1_re = interp2(E2_M1_Re, xiaxis_2, raxis_1, xi, r)
+    E3_1_re = interp2(E3_M1_Re, xiaxis_2, raxis_2, xi, r)
+
+    # Interpolate M1 imaginary electric fields.
+    E1_1_im = interp2(E1_M1_Im, xiaxis_1, raxis_2, xi, r)
+    E2_1_im = interp2(E2_M1_Im, xiaxis_2, raxis_1, xi, r)
+    E3_1_im = interp2(E3_M1_Im, xiaxis_2, raxis_2, xi, r)
+
+    if mode == 0:
+        if axis == 1:
+            return E1_0
+        elif axis == 2:
+            return E2_0 * cos - E3_0 * sin
+        elif axis == 3:
+            return E3_0 * cos + E2_0 * sin
+
+    elif mode == 1:
+        if axis == 1:
+            return E1_1_re * cos + E1_1_im * sin
+        elif axis == 2:
+            return (
+                E2_1_re * cos**2
+                - E3_1_re * cos * sin
+                + E2_1_im * cos * sin
+                - E3_1_im * sin**2
+            )
+        elif axis == 3:
+            return (
+                E3_1_re * cos**2
+                + E2_1_re * cos * sin
+                + E3_1_im * cos * sin
+                + E2_1_im * sin**2
+            )
+
+    else:
+        if axis == 1:
+            return E1_0 + E1_1_re * cos + E1_1_im * sin
+        elif axis == 2:
+            return (
+                E2_0 * cos
+                - E3_0 * sin
+                + E2_1_re * cos**2
+                - E3_1_re * cos * sin
+                + E2_1_im * cos * sin
+                - E3_1_im * sin**2
+            )
+        elif axis == 3:
+            return (
+                E3_0 * cos
+                + E2_0 * sin
+                + E3_1_re * cos**2
+                + E2_1_re * cos * sin
+                + E3_1_im * cos * sin
+                + E2_1_im * sin**2
+            )
+
+def BForce(axis, x, y, xi, r, vx=-1, vy=-1, vz=-1, vr=-1, vphi=-1, mode=-1): # ***
+    """
+    # axis = 1 refers to z-axis field
+    # axis = 2 refers to x-axis field
+    # axis = 3 refers to y-axis field
+    """
+    phi = getPhi(x, y)
     cos = math.cos(phi)
     sin = math.sin(phi)
-    xiDex1 = find_nearest_index(xiaxis_1, xi)
-    xiDex2 = find_nearest_index(xiaxis_2, xi)
-    rDex1 = find_nearest_index(raxis_1, r)
-    rDex2 = find_nearest_index(raxis_2, r)
-    # Calculate expanded BFields
-    if (mode == 0):
-        Bz = B1_M0[rDex2, xiDex1]
-        Bx = B2_M0[rDex1, xiDex2]*cos - B3_M0[rDex2, xiDex2]*sin
-        By = B3_M0[rDex2, xiDex2]*cos + B2_M0[rDex1, xiDex2]*sin
-    elif (mode == 1):
-        Bz = B1_M1_Re[rDex2, xiDex1]*cos + B1_M1_Im[rDex2, xiDex1]*sin
-        Bx = B2_M1_Re[rDex1, xiDex2]*cos**2 - B3_M1_Re[rDex2, xiDex2]*cos*sin + B2_M1_Im[rDex1, xiDex2]*cos*sin - B3_M1_Im[rDex2, xiDex2]*sin**2
-        By = B3_M1_Re[rDex2, xiDex2]*cos**2 + B2_M1_Re[rDex1, xiDex2]*cos*sin + B3_M1_Im[rDex2, xiDex2]*cos*sin + B2_M1_Im[rDex1, xiDex2]*sin**2
+
+    # Interpolate M0 magnetic fields.
+    B1_0 = interp2(B1_M0, xiaxis_1, raxis_2, xi, r)
+    B2_0 = interp2(B2_M0, xiaxis_2, raxis_1, xi, r)
+    B3_0 = interp2(B3_M0, xiaxis_2, raxis_2, xi, r)
+
+    # Interpolate M1 real magnetic fields.
+    B1_1_re = interp2(B1_M1_Re, xiaxis_1, raxis_2, xi, r)
+    B2_1_re = interp2(B2_M1_Re, xiaxis_2, raxis_1, xi, r)
+    B3_1_re = interp2(B3_M1_Re, xiaxis_2, raxis_2, xi, r)
+
+    # Interpolate M1 imaginary magnetic fields.
+    B1_1_im = interp2(B1_M1_Im, xiaxis_1, raxis_2, xi, r)
+    B2_1_im = interp2(B2_M1_Im, xiaxis_2, raxis_1, xi, r)
+    B3_1_im = interp2(B3_M1_Im, xiaxis_2, raxis_2, xi, r)
+
+    if mode == 0:
+        Bz = B1_0
+        Bx = B2_0 * cos - B3_0 * sin
+        By = B3_0 * cos + B2_0 * sin
+
+    elif mode == 1:
+        Bz = B1_1_re * cos + B1_1_im * sin
+        Bx = (
+            B2_1_re * cos**2
+            - B3_1_re * cos * sin
+            + B2_1_im * cos * sin
+            - B3_1_im * sin**2
+        )
+        By = (
+            B3_1_re * cos**2
+            + B2_1_re * cos * sin
+            + B3_1_im * cos * sin
+            + B2_1_im * sin**2
+        )
+
     else:
-        Bz = B1_M0[rDex2, xiDex1] + B1_M1_Re[rDex2, xiDex1]*cos + B1_M1_Im[rDex2, xiDex1]*sin
-        Bx = B2_M0[rDex1, xiDex2]*cos - B3_M0[rDex2, xiDex2]*sin + B2_M1_Re[rDex1, xiDex2]*cos**2 - B3_M1_Re[rDex2, xiDex2]*cos*sin + B2_M1_Im[rDex1, xiDex2]*cos*sin - B3_M1_Im[rDex2, xiDex2]*sin**2
-        By = B3_M0[rDex2, xiDex2]*cos + B2_M0[rDex1, xiDex2]*sin + B3_M1_Re[rDex2, xiDex2]*cos**2 + B2_M1_Re[rDex1, xiDex2]*cos*sin + B3_M1_Im[rDex2, xiDex2]*cos*sin + B2_M1_Im[rDex1, xiDex2]*sin**2
-    # Cross-product velocities with BFields and return the BForce
+        Bz = B1_0 + B1_1_re * cos + B1_1_im * sin
+        Bx = (
+            B2_0 * cos
+            - B3_0 * sin
+            + B2_1_re * cos**2
+            - B3_1_re * cos * sin
+            + B2_1_im * cos * sin
+            - B3_1_im * sin**2
+        )
+        By = (
+            B3_0 * cos
+            + B2_0 * sin
+            + B3_1_re * cos**2
+            + B2_1_re * cos * sin
+            + B3_1_im * cos * sin
+            + B2_1_im * sin**2
+        )
+
     if axis == 1:
         return vx * By - vy * Bx
     elif axis == 2:
         return vy * Bz - vz * By
     elif axis == 3:
         return -1.0 * (vx * Bz - vz * Bx)
+    
 
-def BField(axis,x,y,xi,r,vx=-1,vy=-1,vz=-1,vr=-1,vphi=-1,mode=-1):
-# Return BField
-    phi = getPhi(x,y)
+def BField(axis, x, y, xi, r, vx=-1, vy=-1, vz=-1, vr=-1, vphi=-1, mode=-1):
+    """
+    Return interpolated magnetic field component.
+
+    Currently not used by the trajectory pusher, which uses BForce().
+    Kept for diagnostics and possible plotting.
+    
+    Return the magnetic field component at particle position.
+
+    axis = 1 returns Bz
+    axis = 2 returns Bx
+    axis = 3 returns By
+
+    Uses bilinear interpolation on the staggered Quasi3D field grids.
+    """
+    phi = getPhi(x, y)
     cos = math.cos(phi)
     sin = math.sin(phi)
-    xiDex1 = find_nearest_index(xiaxis_1, xi)
-    xiDex2 = find_nearest_index(xiaxis_2, xi)
-    rDex1 = find_nearest_index(raxis_1, r)
-    rDex2 = find_nearest_index(raxis_2, r)
-# Calculate expanded BFields
-    if (mode == 0):
-        if (axis == 1):
-            return B1_M0[rDex2, xiDex1]
-        elif (axis == 2):
-            return B2_M0[rDex1, xiDex2]*cos - B3_M0[rDex2, xiDex2]*sin
-        elif (axis == 3):
-            return B3_M0[rDex2, xiDex2]*cos + B2_M0[rDex1, xiDex2]*sin
-    elif (mode == 1):
-        if (axis == 1):
-            return B1_M1_Re[rDex2, xiDex1]*cos + B1_M1_Im[rDex2, xiDex1]*sin
-        elif (axis == 2):
-            return B2_M1_Re[rDex1, xiDex2]*cos**2 - B3_M1_Re[rDex2, xiDex2]*cos*sin + B2_M1_Im[rDex1, xiDex2]*cos*sin - B3_M1_Im[rDex2, xiDex2]*sin**2
-        elif (axis == 3):
-            return B3_M1_Re[rDex2, xiDex2]*cos**2 + B2_M1_Re[rDex1, xiDex2]*cos*sin + B3_M1_Im[rDex2, xiDex2]*cos*sin + B2_M1_Im[rDex1, xiDex2]*sin**2
-    else:
-        if (axis == 1):
-            return B1_M0[rDex2, xiDex1] + B1_M1_Re[rDex2, xiDex1]*cos + B1_M1_Im[rDex2, xiDex1]*sin
-        elif (axis == 2):
-            return B2_M0[rDex1, xiDex2]*cos - B3_M0[rDex2, xiDex2]*sin + B2_M1_Re[rDex1, xiDex2]*cos**2 - B3_M1_Re[rDex2, xiDex2]*cos*sin + B2_M1_Im[rDex1, xiDex2]*cos*sin - B3_M1_Im[rDex2, xiDex2]*sin**2
-        elif (axis == 3):
-            return B3_M0[rDex2, xiDex2]*cos + B2_M0[rDex1, xiDex2]*sin + B3_M1_Re[rDex2, xiDex2]*cos**2 + B2_M1_Re[rDex1, xiDex2]*cos*sin + B3_M1_Im[rDex2, xiDex2]*cos*sin + B2_M1_Im[rDex1, xiDex2]*sin**2
 
+    # Interpolate M0 magnetic fields.
+    B1_0 = interp2(B1_M0, xiaxis_1, raxis_2, xi, r)
+    B2_0 = interp2(B2_M0, xiaxis_2, raxis_1, xi, r)
+    B3_0 = interp2(B3_M0, xiaxis_2, raxis_2, xi, r)
+
+    # Interpolate M1 real magnetic fields.
+    B1_1_re = interp2(B1_M1_Re, xiaxis_1, raxis_2, xi, r)
+    B2_1_re = interp2(B2_M1_Re, xiaxis_2, raxis_1, xi, r)
+    B3_1_re = interp2(B3_M1_Re, xiaxis_2, raxis_2, xi, r)
+
+    # Interpolate M1 imaginary magnetic fields.
+    B1_1_im = interp2(B1_M1_Im, xiaxis_1, raxis_2, xi, r)
+    B2_1_im = interp2(B2_M1_Im, xiaxis_2, raxis_1, xi, r)
+    B3_1_im = interp2(B3_M1_Im, xiaxis_2, raxis_2, xi, r)
+
+    if mode == 0:
+        Bz = B1_0
+        Bx = B2_0 * cos - B3_0 * sin
+        By = B3_0 * cos + B2_0 * sin
+
+    elif mode == 1:
+        Bz = B1_1_re * cos + B1_1_im * sin
+
+        Bx = (
+            B2_1_re * cos**2
+            - B3_1_re * cos * sin
+            + B2_1_im * cos * sin
+            - B3_1_im * sin**2
+        )
+
+        By = (
+            B3_1_re * cos**2
+            + B2_1_re * cos * sin
+            + B3_1_im * cos * sin
+            + B2_1_im * sin**2
+        )
+
+    else:
+        Bz = B1_0 + B1_1_re * cos + B1_1_im * sin
+
+        Bx = (
+            B2_0 * cos
+            - B3_0 * sin
+            + B2_1_re * cos**2
+            - B3_1_re * cos * sin
+            + B2_1_im * cos * sin
+            - B3_1_im * sin**2
+        )
+
+        By = (
+            B3_0 * cos
+            + B2_0 * sin
+            + B3_1_re * cos**2
+            + B2_1_re * cos * sin
+            + B3_1_im * cos * sin
+            + B2_1_im * sin**2
+        )
+
+    if axis == 1:
+        return Bz
+    elif axis == 2:
+        return Bx
+    elif axis == 3:
+        return By
+    else:
+        raise ValueError("axis must be 1, 2, or 3")
+
+def interp2(field, xaxis, raxis, xi, r):
+    """
+    Bilinear interpolation of a 2D field array Field[r, xi].
+
+    Parameters
+    ----------
+    field : ndarray
+        2D array with shape (len(raxis), len(xaxis)).
+    xaxis : ndarray
+        xi-axis corresponding to the second index of field.
+    raxis : ndarray
+        radial axis corresponding to the first index of field.
+    xi : float
+        xi location where field is evaluated.
+    r : float
+        radial location where field is evaluated.
+
+    Returns
+    -------
+    float
+        Bilinearly interpolated field value.
+    """
+    if xi < xaxis[0] or xi > xaxis[-1]:
+        raise ValueError(
+            f"xi={xi} is outside axis range [{xaxis[0]}, {xaxis[-1]}]"
+        )
+
+    if r < raxis[0] or r > raxis[-1]:
+        raise ValueError(
+            f"r={r} is outside axis range [{raxis[0]}, {raxis[-1]}]"
+        )
+
+    # Find lower cell indices.
+    ix = np.searchsorted(xaxis, xi) - 1
+    ir = np.searchsorted(raxis, r) - 1
+
+    # Clamp to valid interpolation cells.
+    ix = max(0, min(ix, len(xaxis) - 2))
+    ir = max(0, min(ir, len(raxis) - 2))
+
+    x0 = xaxis[ix]
+    x1 = xaxis[ix + 1]
+    r0 = raxis[ir]
+    r1 = raxis[ir + 1]
+
+    # Avoid divide-by-zero in pathological cases.
+    if x1 == x0:
+        wx = 0.0
+    else:
+        wx = (xi - x0) / (x1 - x0)
+
+    if r1 == r0:
+        wr = 0.0
+    else:
+        wr = (r - r0) / (r1 - r0)
+
+    f00 = field[ir,     ix]
+    f01 = field[ir,     ix + 1]
+    f10 = field[ir + 1, ix]
+    f11 = field[ir + 1, ix + 1]
+
+    return (
+        (1 - wr) * (1 - wx) * f00
+        + (1 - wr) * wx * f01
+        + wr * (1 - wx) * f10
+        + wr * wx * f11
+    )
 
 def chargeElectrons(axis,x,y,xi,r,vx=-1,vy=-1,vz=-1,vr=-1,vphi=-1,mode=-1): # ***
 # axis = 1 refers to z-axis field
