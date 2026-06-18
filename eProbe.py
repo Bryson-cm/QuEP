@@ -8,6 +8,13 @@ _worker_sim = None
 def init_worker(sim_name, input_fname):
     global _worker_sim
     import importlib
+    import sys
+
+    importlib.invalidate_caches()
+
+    if input_fname in sys.modules:
+        del sys.modules[input_fname]
+
     init = importlib.import_module(input_fname)
     if sim_name.upper() == 'OSIRIS_CYLINSYMM':
         import include.simulations.useOsiCylin as sim
@@ -108,9 +115,21 @@ def Momentum(x,y,xi,dt,px,py,pz,mode):
     else:
         vphi = 0
 
-    Fx = -1.0 * (sim.EField(2, x, y, xi, r, vx, vy, vz, vr, vphi, mode) + sim.BForce(2, x, y, xi, r, vx, vy, vz, vr, vphi, mode))
-    Fy = -1.0 * (sim.EField(3, x, y, xi, r, vx, vy, vz, vr, vphi, mode) + sim.BForce(3, x, y, xi, r, vx, vy, vz, vr, vphi, mode))
-    Fz = -1.0 * (sim.EField(1, x, y, xi, r, vx, vy, vz, vr, vphi, mode) + sim.BForce(1, x, y, xi, r, vx, vy, vz, vr, vphi, mode))
+    # Fx = -1.0 * (sim.EField(2, x, y, xi, r, vx, vy, vz, vr, vphi, mode) + sim.BForce(2, x, y, xi, r, vx, vy, vz, vr, vphi, mode))
+    # Fy = -1.0 * (sim.EField(3, x, y, xi, r, vx, vy, vz, vr, vphi, mode) + sim.BForce(3, x, y, xi, r, vx, vy, vz, vr, vphi, mode))
+    # Fz = -1.0 * (sim.EField(1, x, y, xi, r, vx, vy, vz, vr, vphi, mode) + sim.BForce(1, x, y, xi, r, vx, vy, vz, vr, vphi, mode))
+    Ex = sim.EField(2, x, y, xi, r, vx, vy, vz, vr, vphi, mode)
+    Ey = sim.EField(3, x, y, xi, r, vx, vy, vz, vr, vphi, mode)
+    Ez = sim.EField(1, x, y, xi, r, vx, vy, vz, vr, vphi, mode)
+
+    Bx_force = MagneticForce(2, x, y, xi, r, vx, vy, vz, vr, vphi, mode)
+    By_force = MagneticForce(3, x, y, xi, r, vx, vy, vz, vr, vphi, mode)
+    Bz_force = MagneticForce(1, x, y, xi, r, vx, vy, vz, vr, vphi, mode)
+
+    Fx = -1.0 * (Ex + Bx_force)
+    Fy = -1.0 * (Ey + By_force)
+    Fz = -1.0 * (Ez + Bz_force)
+
 
     px = px + Fx * dt
     py = py + Fy * dt
@@ -158,6 +177,34 @@ def getArrayForm(x_dat_, y_dat_, z_dat_, xi_dat_,
     pz_dat[0, :] = pz_dat_
 
     return x_dat, y_dat, z_dat, xi_dat, Fx_dat, Fy_dat, Fz_dat, px_dat, py_dat, pz_dat
+
+
+def MagneticForce(axis, x, y, xi, r, vx, vy, vz, vr, vphi, mode):
+    """
+    Magnetic part of Lorentz force.
+
+    If laser vector-potential mode is enabled, use B = curl(A)
+    for the laser contribution.
+    """
+    sim = _worker_sim
+
+    use_laser_A = getattr(sim, "Laser_A_enabled", False)
+
+    if not use_laser_A:
+        return sim.BForce(axis, x, y, xi, r, vx, vy, vz, vr, vphi, mode)
+
+    if mode == 0:
+        return sim.BForce(axis, x, y, xi, r, vx, vy, vz, vr, vphi, mode=0)
+
+    elif mode == 1:
+        return sim.BForceLaserFromA(axis, x, y, xi, r, vx, vy, vz, vr, vphi)
+
+    else:
+        # Wake magnetic force from M0 fields plus laser magnetic force from A.
+        return (
+            sim.BForce(axis, x, y, xi, r, vx, vy, vz, vr, vphi, mode=0)
+            + sim.BForceLaserFromA(axis, x, y, xi, r, vx, vy, vz, vr, vphi)
+        )
 
 def getTrajectory(x_0,y_0,xi_0,px_0,py_0,pz_0,t0,iter,plasma_bnds,
                   mode,debugmode, x_s):
