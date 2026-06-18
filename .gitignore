@@ -13,3 +13,5 @@
 .DS_Store
 .vscode/launch.json
 .vscode/settings.json
+data/*-DEBUG.obj
+input/*_p[0-9][0-9].py
