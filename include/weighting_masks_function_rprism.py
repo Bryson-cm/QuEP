@@ -4,7 +4,7 @@ import sys
 import math
 import numpy as np
 import pdb
-import progressbar
+#import progressbar
 import time
 
 # Creates weights based on distribution and inputted masks (below)

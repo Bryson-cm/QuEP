@@ -10,6 +10,7 @@ import pdb
 import math
 import copy
 import include.simulations.useQuasi3D as sim
+import importlib
 
 plt.rcParams.update({'font.size': 15 })
 mpl.use('Agg')
@@ -32,6 +33,9 @@ Viridis = True # Sequential + Perceptually Uniform
 BuPu = False # Sequential
 Jet = False
 
+input_module = f"input.ATF2e16"
+init = importlib.import_module(input_module)
+sim.configure(init)
 t0 = sim.getTime()
 
 def returnXi(z):
@@ -75,7 +79,8 @@ def plot(x_f,y_f,xi_f,z_f,px_f,py_f,pz_f, w, sim_name,shape_name,noElec,iter):
     else:
         print("Simulation name unrecognized. Quitting...")
         exit()
-
+   # global t0
+    #t0 = sim.getTime()
     W_P = sim.getPlasFreq()
     plasma_bnds = sim.getBoundCond()
     shape_name = shape_name.capitalize()
@@ -149,11 +154,11 @@ def plot(x_f,y_f,xi_f,z_f,px_f,py_f,pz_f, w, sim_name,shape_name,noElec,iter):
         else:
             axs[i].set_facecolor('white')
 
-    axs[2].set(xlabel = 'Z ($c/\omega_p$)', ylabel = 'Y ($c/\omega_p$)')
+    axs[2].set(xlabel = r'Z ($c/\omega_p$)', ylabel = r'Y ($c/\omega_p$)')
     cbar = plt.colorbar(h[3], ax=axs, orientation='horizontal')
     # Creating secondary xi axis
     secax = axs[0].secondary_xaxis('top', functions= (returnXi, returnZ))
-    secax.set(xlabel= '$\\xi$ ($c/\omega_p$)')
+    secax.set(xlabel= r'$\xi$ ($c/\omega_p$)')
     #cbar.set_label('Electron Density')
 
     # Creating second plot
@@ -173,11 +178,11 @@ def plot(x_f,y_f,xi_f,z_f,px_f,py_f,pz_f, w, sim_name,shape_name,noElec,iter):
         else:
             axs2[i].set_facecolor('white')
 
-    axs2[2].set(xlabel = 'Z ($c/\omega_p$)', ylabel = 'Y ($c/\omega_p$)')
+    axs2[2].set(xlabel = r'Z ($c/\omega_p$)', ylabel = r'Y ($c/\omega_p$)')
     cbar2 = plt.colorbar(h2[3], ax=axs2, orientation='horizontal')
     #cbar2.set_label('Electron Density')
     secax2 = axs2[0].secondary_xaxis('top', functions= (returnXi, returnZ))
-    secax2.set(xlabel= '$\\xi$ ($c/\omega_p$)')
+    secax2.set(xlabel= r'$\xi$ ($c/\omega_p$)')
 
     fig7, axs3 = plt.subplots(3, sharey=True, figsize=(8, 10), dpi=600)
     fig7.suptitle("Progression of " + shape_name + " EProbe")
@@ -195,11 +200,11 @@ def plot(x_f,y_f,xi_f,z_f,px_f,py_f,pz_f, w, sim_name,shape_name,noElec,iter):
         else:
             axs3[i].set_facecolor('white')
 
-    axs3[2].set(xlabel = 'Z ($c/\omega_p$)', ylabel = 'Y ($c/\omega_p$)')
+    axs3[2].set(xlabel = r'Z ($c/\omega_p$)', ylabel = r'Y ($c/\omega_p$)')
     cbar3 = plt.colorbar(h3[3], ax=axs3, orientation='horizontal')
     #cbar3.set_label('Electron Density')
     secax3 = axs3[0].secondary_xaxis('top', functions= (returnXi, returnZ))
-    secax3.set(xlabel= '$\\xi$ ($c/\omega_p$)')
+    secax3.set(xlabel= r'$\xi$ ($c/\omega_p$)')
 
     fig8, axs4 = plt.subplots(3, sharey=True, figsize=(8, 10), dpi=600)
     fig8.suptitle("Progression of " + shape_name + " EProbe")
@@ -222,11 +227,11 @@ def plot(x_f,y_f,xi_f,z_f,px_f,py_f,pz_f, w, sim_name,shape_name,noElec,iter):
         else:
             axs4[i].set_facecolor('white')
 
-    axs4[2].set(xlabel = 'Z ($c/\omega_p$)', ylabel = 'Y ($c/\omega_p$)')
+    axs4[2].set(xlabel = r'Z ($c/\omega_p$)', ylabel = r'Y ($c/\omega_p$)')
     cbar4 = plt.colorbar(h4[3], ax=axs4, orientation='horizontal')
     cbar4.set_label('Electron Density')
     secax4 = axs4[0].secondary_xaxis('top', functions= (returnXi, returnZ))
-    secax4.set(xlabel= '$\\xi$ ($c/\omega_p$)')
+    secax4.set(xlabel= r'$\xi$ ($c/\omega_p$)')
     
     ##############################
     # Creating fifth plot
@@ -244,11 +249,11 @@ def plot(x_f,y_f,xi_f,z_f,px_f,py_f,pz_f, w, sim_name,shape_name,noElec,iter):
         else:
             axs5[i].set_facecolor('white')
 
-    axs5[2].set(xlabel = 'Z ($c/\omega_p$)', ylabel = 'Y ($c/\omega_p$)')
+    axs5[2].set(xlabel = r'Z ($c/\omega_p$)', ylabel = r'Y ($c/\omega_p$)')
     cbar5 = plt.colorbar(h5[3], ax=axs5, orientation='horizontal')
     #cbar5.set_label('Electron Density')
     secax5 = axs5[0].secondary_xaxis('top', functions= (returnXi, returnZ))
-    secax5.set(xlabel= '$\\xi$ ($c/\omega_p$)')
+    secax5.set(xlabel= r'$\xi$ ($c/\omega_p$)')
     ################################
 
     #fig5.savefig('prog1.png',dpi=600,transparent=False)

@@ -85,6 +85,7 @@ def configure(init):
     global Laser_A_ready
 
     Quasi_ID = init.quasi_id
+    
     Quasi_data_dir = getattr(init, "quasi_data_dir", "data/OSIRIS/Quasi3D")
     Quasi_density = init.quasi_density
     Quasi_propagation_speed = getattr(init, "quasi_propagation_speed", 1.0)

@@ -44,7 +44,7 @@ useMasks_y = False                  # Use masks in y-direction (Horizontal; done
 useMasks_x = False                  # NOT CURRENTLY IN USE - LEAVE FALSE - Use masks in x-direction (transverse; done during weighting)
 
 # Plotting Scripts
-showQuickEvolution = False           # View evolution of probe after leaving plasma at inputted x_s in scatter plots # Use for low density probes
+showQuickEvolution = True           # View evolution of probe after leaving plasma at inputted x_s in scatter plots # Use for low density probes
 showFullEvolution = False             # View full evolution of probe at hardcoded locations in colored histograms # Use for high density probes
 makeFullAnimation = False
 writeHistData = False
@@ -82,6 +82,8 @@ if __name__ == '__main__':
         input_fname_1 = str(sys.argv[1])
         print("Using initial conditions from ", input_fname_1)
         init = importlib.import_module(input_fname_1)
+       # sim.configure(init)
+
         sim_name = init.simulation_name
         shape_name = init.shape
         xden = init.xdensity

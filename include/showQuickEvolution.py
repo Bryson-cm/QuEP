@@ -11,6 +11,7 @@ import math
 import include.simulations.useQuasi3D as sim
 plt.rcParams.update({'font.size': 15 })
 mpl.use('Agg')
+import importlib
 
 # Definition of Constants
 M_E = 9.109e-31                      # Electron rest mass in kg
@@ -44,6 +45,11 @@ def getBallisticTraj(x_0,y_0,xi_0,z_0,px,py,pz,x_s):
 
     return y_f, xi_f, z_f
 
+#t0 =0
+#global t0
+input_module = f"input.ATF2e16"
+init = importlib.import_module(input_module)
+sim.configure(init)
 t0 = sim.getTime()
 
 def returnXi(z):
@@ -61,6 +67,11 @@ def plot(x_f,y_f,xi_f,z_f,px_f,py_f,pz_f,sim_name,shape_name,x_s,noElec,iter):
     else:
         print("Simulation name unrecognized. Quitting...")
         exit()
+
+    
+    #t0 =0
+    #global t0
+    #t0 = sim.getTime()
 
     W_P = sim.getPlasFreq()
     shape_name = shape_name.capitalize()
@@ -100,7 +111,7 @@ def plot(x_f,y_f,xi_f,z_f,px_f,py_f,pz_f,sim_name,shape_name,x_s,noElec,iter):
     #for ax in axs.flat:
         #ax.set(xlabel = '$\\xi$ ($c/\omega_p$)', ylabel = 'Y ($c/\omega_p$)')
         #ax.label_outer()
-        axs[2].set(xlabel = '$\\xi$ ($c/\omega_p$)', ylabel = 'Y ($c/\omega_p$)')
+        axs[2].set(xlabel = '$\\xi$ ($c/\\omega_p$)', ylabel = 'Y ($c/\\omega_p$)')
 
     fig6, axs2 = plt.subplots(3, sharey=True, figsize=(8, 10), dpi=80)
     fig6.suptitle("Progression of " + shape_name + " EProbe")
@@ -113,7 +124,7 @@ def plot(x_f,y_f,xi_f,z_f,px_f,py_f,pz_f,sim_name,shape_name,x_s,noElec,iter):
     #for ax in axs2.flat:
         #ax.set(xlabel = '$\\xi$ ($c/\omega_p$)', ylabel = 'Y ($c/\omega_p$)')
         #ax.label_outer()
-        axs2[2].set(xlabel = '$\\xi$ ($c/\omega_p$)', ylabel = 'Y ($c/\omega_p$)')
+        axs2[2].set(xlabel = '$\\xi$ ($c/\\omega_p$)', ylabel = 'Y ($c/\\omega_p$)')
 
     fig7, axs3 = plt.subplots(3, sharex=True, sharey=True, figsize=(8, 10), dpi=80)
     fig7.suptitle("Progression of " + shape_name + " EProbe")
@@ -123,7 +134,7 @@ def plot(x_f,y_f,xi_f,z_f,px_f,py_f,pz_f,sim_name,shape_name,x_s,noElec,iter):
         axs3[i].scatter(zslice[i,:], yslice[i,:], zorder=2)
         #axs3[i].set_ylim(-1,1)
         #axs3[i].set_xlim(35,40)
-    axs3[2].set(xlabel = 'Z ($c/\omega_p$)', ylabel = 'Y ($c/\omega_p$)')
+    axs3[2].set(xlabel = 'Z ($c/\\omega_p$)', ylabel = 'Y ($c/\\omega_p$)')
 
     #####################################################################################
     fig8, axs4 = plt.subplots(3, sharex=True, sharey=True, figsize=(8, 10), dpi=80)
@@ -134,18 +145,18 @@ def plot(x_f,y_f,xi_f,z_f,px_f,py_f,pz_f,sim_name,shape_name,x_s,noElec,iter):
         axs4[i].scatter(zslice[i+3,:], yslice[i+3,:])
 
     secax = axs4[2].secondary_xaxis('top', functions= (returnXi, returnZ))
-    secax.set(xlabel= '$\\xi$ ($c/\omega_p$)')
+    secax.set(xlabel= '$\\xi$ ($c/\\omega_p$)')
     #axs4[i].set_ylim(-30,1) #commented out before was -1 to 1
     #axs4[i].set_xlim(0,2000)  #commented out before was 35 to 40 before
-    axs4[2].set(xlabel = 'Z ($c/\omega_p$)', ylabel = 'Y ($c/\omega_p$)')
+    axs4[2].set(xlabel = 'Z ($c/\\omega_p$)', ylabel = 'Y ($c/\\omega_p$)')
     ######################################################################################
 
     fig9, axs5 = plt.subplots(constrained_layout=True, figsize=(10,5))
     axs5.set_title("Low Density Probe, X = " + str(x_s[5]) + " mm")
     axs5.scatter(zslice[5], yslice[5])
-    axs5.set(xlabel = 'Z ($c/\omega_p$)', ylabel = 'Y ($c/\omega_p$)')
+    axs5.set(xlabel = 'Z ($c/\\omega_p$)', ylabel = 'Y ($c/\\omega_p$)')
     secax = axs5.secondary_xaxis('top', functions= (returnXi, returnZ))
-    secax.set(xlabel= '$\\xi$ ($c/\omega_p$)')
+    secax.set(xlabel= '$\\xi$ ($c/\\omega_p$)')
 
     #fig9.show()
     #fig5.show()

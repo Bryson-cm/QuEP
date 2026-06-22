@@ -10,7 +10,7 @@ import pdb
 import math
 import copy
 import time
-import progressbar
+#import progressbar
 import multiprocessing as mp
 import include.simulations.useQuasi3D as sim
 
@@ -30,9 +30,8 @@ Viridis = True # Sequential + Perceptually Uniform
 BuPu = False # Sequential
 Jet = False
 
-t0 = sim.getTime()
-
-propspeed = sim.getPropagationSpeed()
+t0 = None
+propspeed = None
 
 def returnXi(z):
     return z - t0*propspeed
@@ -77,7 +76,10 @@ def prepare(sim_name,shape_name,noObj,rand):
     else:
         print("Simulation name unrecognized. Quitting...")
         exit()
-
+        
+    global t0, propspeed
+    t0 = sim.getTime()
+    propspeed = sim.getPropagationSpeed()
     W_P = sim.getPlasFreq()
     plasma_bnds = sim.getBoundCond()
     shape_name = shape_name.capitalize()
@@ -181,10 +183,10 @@ def plotmp(i,x_f,y_f,z_f,px_f,py_f,pz_f, w, xden, plasma_bnds, xs_norm, yslice, 
     else:
         ax.set_facecolor('white')
 
-    ax.set(xlabel = 'Z ($c/\omega_p$)', ylabel = 'Y ($c/\omega_p$)')
+    ax.set(xlabel = r'Z ($c/\omega_p$)', ylabel = r'Y ($c/\omega_p$)')
 
     secax = ax.secondary_xaxis('top', functions= (returnXi, returnZ))
-    secax.set(xlabel= '$\\xi$ ($c/\omega_p$)')
+    secax.set(xlabel= r'$\xi$ ($c/\omega_p$)')
     
     cbar = plt.colorbar(h[3], ax=ax, orientation='horizontal')#, pad=0.2)
     #cbar.set_label('Electron Density')

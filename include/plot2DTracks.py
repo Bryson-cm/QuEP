@@ -44,8 +44,8 @@ def plot(x_dat,y_dat,z_dat,xi_dat,Fx_dat,Fy_dat,Fz_dat,px_dat,py_dat,pz_dat,sim_
 # 2D: Z-X, constrained to blowout regime, changed to Y-Z
     fig1 = plt.figure(1)
     ax1 = plt.axes()
-    ax1.set_xlabel("X ($c/\omega_p$)")    # For betatron test Changed x axis to Z
-    ax1.set_ylabel("Z ($c/\omega_p$)")    # For betatron test, Changed y axis to Y
+    ax1.set_xlabel(r"X ($c/\omega_p$)")    # For betatron test Changed x axis to Z
+    ax1.set_ylabel(r"Z ($c/\omega_p$)")    # For betatron test, Changed y axis to Y
     ax1.set_xlim(-3,3)                    # For betatron test, changed from -3 to 3 to 0 to 600 (making x axis Z instead of X), 200 to zoom in for betatron wavelength
     #ax1.set_ylim(44, 46)
     #ax1.set_ylim(-3,3)
@@ -57,7 +57,7 @@ def plot(x_dat,y_dat,z_dat,xi_dat,Fx_dat,Fy_dat,Fz_dat,px_dat,py_dat,pz_dat,sim_
 
     if (plotZForce):
         ax1_f = ax1.twinx()
-        ax1_f.set_ylabel("$F_x$ ($m_e c \omega_p$)")
+        ax1_f.set_ylabel(r"$F_x$ ($m_e c \omega_p$)")
         #ax1_f.set_ylim(-0.3,0.3)
         ax1_f.yaxis.label.set_color('C0')
         ax1_f.tick_params(axis='y', labelcolor='C0', colors='C0')
@@ -78,9 +78,9 @@ def plot(x_dat,y_dat,z_dat,xi_dat,Fx_dat,Fy_dat,Fz_dat,px_dat,py_dat,pz_dat,sim_
         ax2.set_ylim(-0.2,0.65)          # Added y limit to correct bad scale fitting
     
    
-    ax2.set_xlabel("X ($c/\omega_p$)")
-    ax2.set_ylabel("Y/$R_b$ ($c/\omega_p$)")
-    ax2.set_title("Electron Trajectory through Blowout Regime")
+    ax2.set_xlabel(r"X ($c/\omega_p$)")
+    ax2.set_ylabel(r"Y/$R_b$ ($c/\omega_p$)")
+    ax2.set_title(r"Electron Trajectory through Blowout Regime")
     
     
 
@@ -131,13 +131,13 @@ def plot(x_dat,y_dat,z_dat,xi_dat,Fx_dat,Fy_dat,Fz_dat,px_dat,py_dat,pz_dat,sim_
             
           
 
-        Fy_ax.set_ylabel("$F_y$ ($m_e c \omega_p$)")
-        px_ax.set_ylabel("$p_x (m_e c)$")
-        py_ax.set_ylabel("$p_y (m_e c)$")
-        pz_ax.set_ylabel("$p_z (m_e c)$")
-        #y_ax.set_ylabel("$Y$ (c \omega_p$)")
-        #Fy1_ax.set_ylabel("$Fy Fit$ ($m_e c \omega_p$)")
-        #Fy2_ax.set_ylabel("$Fy K$ ($m_e c \omega_p$)")
+        Fy_ax.set_ylabel(r"$F_y$ ($m_e c \omega_p$)")
+        px_ax.set_ylabel(r"$p_x (m_e c)$")
+        py_ax.set_ylabel(r"$p_y (m_e c)$")
+        pz_ax.set_ylabel(r"$p_z (m_e c)$")
+        #y_ax.set_ylabel(r"$Y$ (c \omega_p$)")
+        #Fy1_ax.set_ylabel(r"$Fy Fit$ ($m_e c \omega_p$)")
+        #Fy2_ax.set_ylabel(r"$Fy K$ ($m_e c \omega_p$)")
        
 
         Fy_ax.yaxis.label.set_color('C0')
@@ -169,9 +169,9 @@ def plot(x_dat,y_dat,z_dat,xi_dat,Fx_dat,Fy_dat,Fz_dat,px_dat,py_dat,pz_dat,sim_
         
     
    
-    ax2.set_xlabel("X ($c/\omega_p$)")
-    ax2.set_ylabel("Y/$R_b$ ($c/\omega_p$)")
-    ax2.set_title("Electron Trajectory through Blowout Regime")
+    ax2.set_xlabel(r"X ($c/\omega_p$)")
+    ax2.set_ylabel(r"Y/$R_b$ ($c/\omega_p$)")
+    ax2.set_title(r"Electron Trajectory through Blowout Regime")
 
 
 

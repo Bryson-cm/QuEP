@@ -12,8 +12,8 @@ def plot(x_dat,y_dat,xi_dat,z_dat,sim_name,shape_name,s1,s2,noElec):
 
     fig5 = plt.figure()
     ax5 = plt.axes()
-    ax5.set_xlabel("$\\xi$ ($c/\omega_p$)")
-    ax5.set_ylabel("Y ($c/\omega_p$)")
+    ax5.set_xlabel(r"$\xi$ ($c/\omega_p$)")
+    ax5.set_ylabel(r"Y ($c/\omega_p$)")
     ax5.set_title("Initial Electron Probe Shape")
 
     for i in range(0,noElec):

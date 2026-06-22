@@ -10,7 +10,7 @@ import pdb
 import math
 import copy
 import time
-import progressbar
+#import progressbar
 import multiprocessing as mp
 import include.simulations.useQuasi3D as sim
 mpl.use('Agg')
@@ -29,9 +29,11 @@ Viridis = True # Sequential + Perceptually Uniform
 BuPu = False # Sequential
 Jet = False
 
-t0 = sim.getTime()
+#t0 = sim.getTime()
+t0 = None
 
-propspeed = sim.getPropagationSpeed()
+#propspeed = sim.getPropagationSpeed()
+propspeed = None
 
 def returnXi(z):
     return z - t0*propspeed
@@ -51,9 +53,9 @@ def plotcross(w_export1, x_0, y_0, xi_0, z_0, s1, s2, ydensity, xidensity, beamx
     ax3.plot(xi_0[int(xidensity*39):int(xidensity*40)-1],w_export1,"o", label="weighting_function",alpha=0.7)
     
     #ax3.legend(loc='upper right')
-    ax3.set_xlabel("$\\xi_0$ ($c/\omega_p$)")
-    ax3.set_ylabel("$w$")
-    ax3.set_title("Combined weighting")
+    ax3.set_xlabel(r"$\xi_0$ ($c/\omega_p$)")
+    ax3.set_ylabel(r"$w$")
+    ax3.set_title(r"Combined weighting")
 
     print(f"y_export = {y_0[xidensity*39]} , {y_0[xidensity*40-1]}")
 
@@ -84,9 +86,9 @@ def ploty(w_y, x_0, y_0, xi_0, z_0, s1, s2, ydensity, xidensity, beamy_c, sigma_
     ax4.plot(y_0[0:len(y_0):xidensity],w_y,"o", label="Weighting function",alpha=0.7)
     
     #ax3.legend(loc='upper right')
-    ax4.set_xlabel("$y_0$ ($c/\omega_p$)")
-    ax4.set_ylabel("$w_y$")
-    ax4.set_title("y-direction weighting")
+    ax4.set_xlabel(r"$y_0$ ($c/\omega_p$)")
+    ax4.set_ylabel(r"$w_y$")
+    ax4.set_title(r"y-direction weighting")
 
     Deltay = 2*s1/ydensity
     summ = 0
@@ -116,9 +118,9 @@ def plotxi(w_xi, x_0, y_0, xi_0, z_0, s1, s2, ydensity, xidensity, beamxi_c, sig
     ax5.plot(xi_0[0:len(w_xi)],w_xi,"o", label="Weighting function",alpha=0.7)
     
     #ax5.legend(loc='upper right')
-    ax5.set_xlabel("$\\xi_0$ ($c/\omega_p$)")
-    ax5.set_ylabel("$w_\\xi$")
-    ax5.set_title("$\\xi$-direction weighting")
+    ax5.set_xlabel(r"$\xi_0$ ($c/\omega_p$)")
+    ax5.set_ylabel(r"$w_\xi$")
+    ax5.set_title(r"$\xi$-direction weighting")
 
     Deltaxi = 2*s2/xidensity
     summ = 0
@@ -141,6 +143,11 @@ def plotxi(w_xi, x_0, y_0, xi_0, z_0, s1, s2, ydensity, xidensity, beamxi_c, sig
 
 def plotweightsxiy(y_0,xi_0, w, rand):
     
+    global t0, propspeed
+    t0 = sim.getTime()
+    propspeed = sim.getPropagationSpeed()
+
+
     path = os.getcwd()
     timestr = time.strftime("%Y%m%d-%H%M%S")
     new_path = os.path.join(path,f'animation-{timestr}-{rand}')
@@ -190,10 +197,10 @@ def plotweightsxiy(y_0,xi_0, w, rand):
     else:
         ax.set_facecolor('white')
 
-    ax.set(xlabel = '$\\xi$ ($c/\omega_p$)', ylabel = 'Y ($c/\omega_p$)')
+    ax.set(xlabel = r'$\xi$ ($c/\omega_p$)', ylabel = r'Y ($c/\omega_p$)')
 
     secax = ax.secondary_xaxis('top', functions= (returnZ, returnXi))
-    secax.set(xlabel= 'Z ($c/\omega_p$)')
+    secax.set(xlabel= r'Z ($c/\omega_p$)')
     
     cbar = plt.colorbar(h[3], ax=ax, orientation='horizontal')
     #cbar.set_label('Electron Density')
