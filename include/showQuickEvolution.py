@@ -8,10 +8,12 @@ import matplotlib.cm as cm
 import matplotlib.ticker as ticker
 import pdb
 import math
-import include.simulations.useQuasi3D as sim
+import importlib
+import sys
+#import include.simulations.useQuasi3D as sim
 plt.rcParams.update({'font.size': 15 })
 mpl.use('Agg')
-import importlib
+
 
 # Definition of Constants
 M_E = 9.109e-31                      # Electron rest mass in kg
@@ -45,12 +47,13 @@ def getBallisticTraj(x_0,y_0,xi_0,z_0,px,py,pz,x_s):
 
     return y_f, xi_f, z_f
 
+#Commented out The original t0 was not configured yet as the new code added redundencies.
 #t0 =0
 #global t0
-input_module = f"input.ATF2e16"
-init = importlib.import_module(input_module)
-sim.configure(init)
-t0 = sim.getTime()
+# input_module = f"input.ATF2e16"
+# init = importlib.import_module(input_module)
+# sim.configure(init)
+# t0 = sim.getTime()
 
 def returnXi(z):
     return z - C * t0
@@ -68,6 +71,10 @@ def plot(x_f,y_f,xi_f,z_f,px_f,py_f,pz_f,sim_name,shape_name,x_s,noElec,iter):
         print("Simulation name unrecognized. Quitting...")
         exit()
 
+    input_module = str(sys.argv[1])
+    init = importlib.import_module(input_module)
+    sim.configure(init)
+    t0 = sim.getTime()
     
     #t0 =0
     #global t0
