@@ -389,9 +389,9 @@ def setLaserRegionFromInput():
     Laser_xi_index_min = j_min
     Laser_xi_index_max = j_max
 
-    print("Using laser vector-potential region:")
-    print("  xi range:", Laser_xi_start, Laser_xi_end)
-    print("  index range:", Laser_xi_index_min, Laser_xi_index_max)
+    # print("Using laser vector-potential region:")
+    # print("  xi range:", Laser_xi_start, Laser_xi_end)
+    # print("  index range:", Laser_xi_index_min, Laser_xi_index_max)
 
     return j_min, j_max
 
