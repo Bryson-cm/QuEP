@@ -48,20 +48,19 @@ def getBallisticTraj(x_0,y_0,xi_0,z_0,px,py,pz,x_s):
     return y_f, xi_f, z_f
 
 #Commented out The original t0 was not configured yet as the new code added redundencies.
-#t0 =0
-#global t0
+# t0 = 0
 # input_module = f"input.ATF2e16"
 # init = importlib.import_module(input_module)
 # sim.configure(init)
 # t0 = sim.getTime()
 
-def returnXi(z):
+def returnXi(z, t0):
     return z - C * t0
 
-def returnZ(xi):
+def returnZ(xi, t0):
     return xi + C * t0
 
-def plot(x_f,y_f,xi_f,z_f,px_f,py_f,pz_f,sim_name,shape_name,x_s,noElec,iter):
+def plot(x_f,y_f,xi_f,z_f,px_f,py_f,pz_f, t0, sim_name,shape_name,x_s,noElec,iter, fig_name):
 # Plot evolution of probe after leaving plasma
     if (sim_name.upper() == 'OSIRIS_CYLINSYMM'):
         import include.simulations.useOsiCylin as sim
@@ -71,14 +70,11 @@ def plot(x_f,y_f,xi_f,z_f,px_f,py_f,pz_f,sim_name,shape_name,x_s,noElec,iter):
         print("Simulation name unrecognized. Quitting...")
         exit()
 
+    print("Beginning Quick Evolution 'plot' Module")
+
     input_module = str(sys.argv[1])
     init = importlib.import_module(input_module)
     sim.configure(init)
-    t0 = sim.getTime()
-    
-    #t0 =0
-    #global t0
-    #t0 = sim.getTime()
 
     W_P = sim.getPlasFreq()
     shape_name = shape_name.capitalize()
@@ -105,7 +101,16 @@ def plot(x_f,y_f,xi_f,z_f,px_f,py_f,pz_f,sim_name,shape_name,x_s,noElec,iter):
 
     x_s = [x_f[0] * C * 10**3 / W_P] + x_s
 
-# Plot slices
+
+    ############################################################################################################################
+    #These figures show the probe evolution at the user inputted screen distances. 
+    #The first three figures show the progression of the probe in the y-xi plane,
+    # while the last two figures show the progression of the probe in the y-z plane. 
+    # The last figure shows only the last screen distance.
+
+
+
+    # Plot slices
     fig5, axs = plt.subplots(3, sharex=True, sharey=True, figsize=(8, 10), dpi=80)
     fig5.suptitle("Progression of " + shape_name + " EProbe")
 
@@ -118,7 +123,7 @@ def plot(x_f,y_f,xi_f,z_f,px_f,py_f,pz_f,sim_name,shape_name,x_s,noElec,iter):
     #for ax in axs.flat:
         #ax.set(xlabel = '$\\xi$ ($c/\omega_p$)', ylabel = 'Y ($c/\omega_p$)')
         #ax.label_outer()
-        axs[2].set(xlabel = '$\\xi$ ($c/\\omega_p$)', ylabel = 'Y ($c/\\omega_p$)')
+        axs[2].set(xlabel = r'$\xi$ ($c/\omega_p$)', ylabel = r'Y ($c/\omega_p$)')
 
     fig6, axs2 = plt.subplots(3, sharey=True, figsize=(8, 10), dpi=80)
     fig6.suptitle("Progression of " + shape_name + " EProbe")
@@ -131,7 +136,7 @@ def plot(x_f,y_f,xi_f,z_f,px_f,py_f,pz_f,sim_name,shape_name,x_s,noElec,iter):
     #for ax in axs2.flat:
         #ax.set(xlabel = '$\\xi$ ($c/\omega_p$)', ylabel = 'Y ($c/\omega_p$)')
         #ax.label_outer()
-        axs2[2].set(xlabel = '$\\xi$ ($c/\\omega_p$)', ylabel = 'Y ($c/\\omega_p$)')
+        axs2[2].set(xlabel = r'$\xi$ ($c/\omega_p$)', ylabel = r'Y ($c/\omega_p$)')
 
     fig7, axs3 = plt.subplots(3, sharex=True, sharey=True, figsize=(8, 10), dpi=80)
     fig7.suptitle("Progression of " + shape_name + " EProbe")
@@ -141,35 +146,62 @@ def plot(x_f,y_f,xi_f,z_f,px_f,py_f,pz_f,sim_name,shape_name,x_s,noElec,iter):
         axs3[i].scatter(zslice[i,:], yslice[i,:], zorder=2)
         #axs3[i].set_ylim(-1,1)
         #axs3[i].set_xlim(35,40)
-    axs3[2].set(xlabel = 'Z ($c/\\omega_p$)', ylabel = 'Y ($c/\\omega_p$)')
+    axs3[2].set(xlabel = r'Z ($c/\omega_p$)', ylabel = r'Y ($c/\omega_p$)')
 
     #####################################################################################
-    fig8, axs4 = plt.subplots(3, sharex=True, sharey=True, figsize=(8, 10), dpi=80)
-    fig8.suptitle("Progression of " + shape_name + " EProbe")
 
-    for i in range(0, 3):
-        axs4[i].set_title("Low Density Probe, X = " + str(x_s[i+3]) + " mm")
-        axs4[i].scatter(zslice[i+3,:], yslice[i+3,:])
+    # fig8, axs4 = plt.subplots(3,2, figsize=(12,6), dpi=80) #Removed shared axis. Added two rows. I want to fit entire evolution on one figure 
+    # fig8.suptitle("Progression of " + shape_name + " EProbe")
 
-    secax = axs4[2].secondary_xaxis('top', functions= (returnXi, returnZ))
-    secax.set(xlabel= '$\\xi$ ($c/\\omega_p$)')
-    #axs4[i].set_ylim(-30,1) #commented out before was -1 to 1
-    #axs4[i].set_xlim(0,2000)  #commented out before was 35 to 40 before
-    axs4[2].set(xlabel = 'Z ($c/\\omega_p$)', ylabel = 'Y ($c/\\omega_p$)')
+    # for i in range(0, 4):
+    #     axs4[i].set_title("Low Density Probe, X = " + str(x_s[i]) + " mm")
+    #     axs4[i].scatter(zslice[i:], yslice[i,:])
+    #     axs4[i].set(xlabel = r'Z ($c/\omega_p$)', ylabel = r'Y ($c/\omega_p$)')
+
+    # # secax = axs4[2].secondary_xaxis('top', functions= (returnXi, returnZ))
+    # # secax.set(xlabel= r'$\xi$ ($c/\omega_p$)')
+    # #axs4[i].set_ylim(-30,1) #commented out before was -1 to 1
+    # #axs4[i].set_xlim(0,2000)  #commented out before was 35 to 40 before
+    # # axs4[2].set(xlabel = r'Z ($c/\omega_p$)', ylabel = r'Y ($c/\omega_p$)')
+
+    ########################################################################################
+    #Make a plot of the evolution of the beam and save it.
+    fig8, axs4 = plt.subplots(3, 2, figsize=(15,10), dpi=150, sharex=True, sharey=True)
+
+    fig8.suptitle(f"Progression of {shape_name} EProbe", fontsize=18)
+
+    #Flatten the plots matracies so that it can be used in conjunction with matplot lib commands.
+    axs4 = axs4.flatten()
+
+    #Prepare each subplot using the slice data at a specfic distance away.
+    for i in range(len(x_s)):
+        axs4[i].scatter(zslice[i,:], yslice[i,:], s=10)
+        axs4[i].set_title(f"X = {x_s[i]} mm")
+        axs4[i].set( xlabel=r'Z ($c/\omega_p$)', ylabel=r'Y ($c/\omega_p$)')
+        axs4[i].grid(alpha=0.3)
+        axs4[i].yaxis.set_major_locator(ticker.MaxNLocator(8))
+        axs4[i].tick_params(axis='both', which='both', labelbottom=True, labelleft=True)
+
+    #Set an additional axes to invisable for asthetics
+    axs4[5].set_visible(False)
+
+    fig8.tight_layout()
     ######################################################################################
 
     fig9, axs5 = plt.subplots(constrained_layout=True, figsize=(10,5))
     axs5.set_title("Low Density Probe, X = " + str(x_s[5]) + " mm")
     axs5.scatter(zslice[5], yslice[5])
-    axs5.set(xlabel = 'Z ($c/\\omega_p$)', ylabel = 'Y ($c/\\omega_p$)')
+    axs5.set(xlabel = r'Z ($c/\omega_p$)', ylabel = r'Y ($c/\omega_p$)')
     secax = axs5.secondary_xaxis('top', functions= (returnXi, returnZ))
-    secax.set(xlabel= '$\\xi$ ($c/\\omega_p$)')
+    secax.set(xlabel= r'$\xi$ ($c/\omega_p$)')
 
     #fig9.show()
     #fig5.show()
     #fig.tight_layout()
     #fig6.show()
     #fig7.show()
-    fig8.savefig('quickevolutions.png')
-
+    fig8.savefig(fig_name +'_quickevolutions.png')
+    print(f"Progression of {shape_name} EProbe" + f" saved to {fig_name}_quickevolutions.png")
+    print("Press enter to end Quick Evolution 'plot' Module")
     input()
+    
