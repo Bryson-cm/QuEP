@@ -13,9 +13,9 @@ fname = "test.npz"
 debugmode = False
 
 # Probe centered at the following initial coordinates, in c/omega_p.
-x_c = 3
-y_c = 0.1
-xi_c = 3
+x_c = -1
+y_c = 0
+xi_c = -7.3
 
 # Initial momentum.
 px_0 = 110
@@ -23,15 +23,15 @@ py_0 = 0
 pz_0 = 0
 
 # Screen distances from z-axis of plasma cell, in mm.
-x_s = [10, 50, 100, 250, 500]
+x_s = [10, 50, 65, 85, 100,]
 
 # Shape parameters.
-s1 = 0.1  # in y
-s2 = 0.1  # in xi
+s1 = 0.3  # in y
+s2 = 0.3  # in xi
 
 # Densities.
-ydensity = 4
-xidensity = 1
+ydensity = 6
+xidensity = 6
 xdensity = 1
 resolution = None
 
