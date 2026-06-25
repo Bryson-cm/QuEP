@@ -16,6 +16,7 @@ k = 0.5   #0.19#0.493#0.475
 vx = 1.0 # =0.1 when pz = 1000, =1 when pz = 0
 
 def calculate(x_0,y_0,xi_0,z_0,x_f,y_f,xi_f,z_f,px_f,py_f,pz_f,sim_name,shape_name,x_s,s1,s2,px_0,py_0,pz_0):
+    print("Beginning FindFocalY 'calculate' Module")
 
     dy, fAngle, fXp = [],[],[]
 
@@ -40,4 +41,8 @@ def calculate(x_0,y_0,xi_0,z_0,x_f,y_f,xi_f,z_f,px_f,py_f,pz_f,sim_name,shape_na
         print("Focal Y from p_y = " + str(focal_y) + " " + u"\u00B1 " + str(std_y))
     else:
         print("Focal Y from p_y= " + str(fAngle))
+   
+   
+
+    print("Press enter to end FindFocalY 'calculate' Module")  
     input()
