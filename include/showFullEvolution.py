@@ -11,6 +11,7 @@ import math
 import copy
 import include.simulations.useQuasi3D as sim
 import importlib
+import sys
 
 plt.rcParams.update({'font.size': 15 })
 mpl.use('Agg')
@@ -33,15 +34,12 @@ Viridis = True # Sequential + Perceptually Uniform
 BuPu = False # Sequential
 Jet = False
 
-input_module = f"input.ATF2e16"
-init = importlib.import_module(input_module)
-sim.configure(init)
-t0 = sim.getTime()
+###############################################################################################
 
-def returnXi(z):
+def returnXi(z, t0):
     return z - C * t0 
 
-def returnZ(xi):
+def returnZ(xi, t0):
     return xi + C * t0
 
 def Gamma(p):
@@ -70,8 +68,11 @@ def getBallisticTraj(x_0,y_0,xi_0,z_0,px,py,pz,x_s):
 
     return y_f, xi_f, z_f
 
-def plot(x_f,y_f,xi_f,z_f,px_f,py_f,pz_f, w, sim_name,shape_name,noElec,iter):
+def plot(x_f,y_f,xi_f,z_f,px_f,py_f,pz_f, t0, w, sim_name,shape_name,noElec,iter, fig_name):
 # Plot evolution of probe after leaving plasma
+    print("Beginning Full Evolution Module")
+
+
     if (sim_name.upper() == 'OSIRIS_CYLINSYMM'):
         import include.simulations.useOsiCylin as sim
     elif (sim_name.upper() == 'QUASI3D'):
@@ -79,8 +80,13 @@ def plot(x_f,y_f,xi_f,z_f,px_f,py_f,pz_f, w, sim_name,shape_name,noElec,iter):
     else:
         print("Simulation name unrecognized. Quitting...")
         exit()
-   # global t0
-    #t0 = sim.getTime()
+    
+    
+    input_module = str(sys.argv[1])
+    init = importlib.import_module(input_module)
+    sim.configure(init)
+
+
     W_P = sim.getPlasFreq()
     plasma_bnds = sim.getBoundCond()
     shape_name = shape_name.capitalize()
@@ -260,4 +266,4 @@ def plot(x_f,y_f,xi_f,z_f,px_f,py_f,pz_f, w, sim_name,shape_name,noElec,iter):
     #fig6.savefig('prog2.png',dpi=600,transparent=False)
     #fig7.savefig('prog3.png',dpi=600,transparent=False)
     #fig8.savefig('prog4.png',dpi=600,transparent=False)
-    fig9.savefig('prog5.png',dpi=600,transparent=False)
+    fig9.savefig(f'{fig_name}_prog5.png',dpi=600,transparent=False)

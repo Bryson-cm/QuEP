@@ -30,13 +30,11 @@ Viridis = True # Sequential + Perceptually Uniform
 BuPu = False # Sequential
 Jet = False
 
-t0 = None
-propspeed = None
 
-def returnXi(z):
+def returnXi(z, t0, propspeed):
     return z - t0*propspeed
 
-def returnZ(xi):
+def returnZ(xi, t0, propspeed):
     return xi + t0*propspeed
 
 def Gamma(p):
