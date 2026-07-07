@@ -32,8 +32,8 @@ import time
 import pickle
 import multiprocessing as mp
 from DebugObjectModule import DebugObject
-from numba import jit, cuda    # Imports to run on GPU
-from tqdm import tqdm
+#from numba import jit, cuda    # Imports to run on GPU
+#from tqdm import tqdm
 
 # Include file imports
 import eProbe
@@ -145,23 +145,17 @@ if __name__ == '__main__':
 
         eProbe.init_worker(sim_name, input_fname)
 
+        N_CORES = 28   # <-- change this number
+
         if noObj == 1:
-            #Single electron section
             results = [eProbe.getTrajectory(*args[0])]
         else:
-            # Initialize multiprocessing.Pool()
-            # A parallelized process is leveraged for multi-electron tests
-            # pool = mp.Pool(mp.cpu_count())# mp.cpu_count())
-            #@jit(target_backend='cuda')
-
-            # results = pool.starmap(eProbe.getTrajectory, args)
-            # pool.close()
             with mp.Pool(
-                mp.cpu_count(),
+                processes=N_CORES,
                 initializer=eProbe.init_worker,
                 initargs=(sim_name, input_fname)
-            ) as pool:
-                results = pool.starmap(eProbe.getTrajectory, args)
+            )  as pool:
+                    results = pool.starmap(eProbe.getTrajectory, args)
 
         x_f, y_f, xi_f, z_f, px_f, py_f, pz_f, Debug = zip(*results)
        

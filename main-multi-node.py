@@ -142,28 +142,69 @@ if __name__ == '__main__':
             )
             for i in range(noObj)
         ]
+        # ── MPI DISTRIBUTED BLOCK ──────────────────────────────────────────────────
+        from mpi4py import MPI
 
+        comm = MPI.COMM_WORLD
+        rank = comm.Get_rank()   # which process am I?
+        size = comm.Get_size()   # how many total MPI processes are running?
+
+        # Broadcast sim_name and input_fname from rank 0 to all other ranks
+        # (only rank 0 has loaded these from the input file above)
+        if rank == 0:
+            _bcast = {"sim_name": sim_name, "input_fname": input_fname}
+        else:
+            _bcast = None
+
+        _bcast      = comm.bcast(_bcast, root=0)
+        sim_name    = _bcast["sim_name"]
+        input_fname = _bcast["input_fname"]
+
+# Every rank initializes its own copy of the simulation module
         eProbe.init_worker(sim_name, input_fname)
 
         if noObj == 1:
-            #Single electron section
-            results = [eProbe.getTrajectory(*args[0])]
+         # Single electron — no distribution needed, rank 0 handles it alone
+            if rank == 0:
+                results = [eProbe.getTrajectory(*args[0])]
         else:
-            # Initialize multiprocessing.Pool()
-            # A parallelized process is leveraged for multi-electron tests
-            # pool = mp.Pool(mp.cpu_count())# mp.cpu_count())
-            #@jit(target_backend='cuda')
+            # Split the full args list into equal chunks, one chunk per MPI rank.
+            # [i::size] gives rank i every size-th element, distributing evenly
+            # even when noObj is not perfectly divisible by size.
+            if rank == 0:
+                chunks = [args[i::size] for i in range(size)]
+            else:
+                chunks = None
 
-            # results = pool.starmap(eProbe.getTrajectory, args)
-            # pool.close()
-            with mp.Pool(
-                mp.cpu_count(),
-                initializer=eProbe.init_worker,
-                initargs=(sim_name, input_fname)
-            ) as pool:
-                results = pool.starmap(eProbe.getTrajectory, args)
+            # Scatter: rank 0 sends each rank its chunk; every rank receives local_args
+            local_args = comm.scatter(chunks, root=0)
+
+            # Each rank works through its own chunk sequentially
+            local_results = [eProbe.getTrajectory(*a) for a in local_args]
+
+            # Gather: every rank sends its local_results back to rank 0
+            all_results = comm.gather(local_results, root=0)
+
+        if rank == 0:
+                # Reassemble in original order.
+                # all_results is [[rank0 results], [rank1 results], ...]
+                # The scatter used [i::size] interleaving, so we need to
+             # undo that interleaving to restore the original order.
+                results = [None] * noObj
+                for r, (i, res) in enumerate(
+                    (i, res)
+                    for i, chunk in enumerate(all_results)
+                    for r, res in enumerate(chunk)
+                    ):
+                    results[i + r * size] = res
+
+        # ── Only rank 0 continues past this point ─────────────────────────────────
+        if rank != 0:
+            MPI.Finalize()
+            exit()
 
         x_f, y_f, xi_f, z_f, px_f, py_f, pz_f, Debug = zip(*results)
+# ── End of MPI DISTRIBUTED BLOCK ──────────────────────────────────────────
        
 
         tf = time.localtime()
