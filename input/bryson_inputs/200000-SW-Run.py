@@ -8,7 +8,7 @@ iterations = 40000
 # mode 0 is the wakefield, mode 1 is the laser, mode -1 is both.
 mode = -1
 
-fname = "super_low_den.npz"
+fname = "200000-SW-Run.npz"
 
 debugmode = False
 
@@ -27,11 +27,11 @@ x_s = [10, 25, 50, 75, 100,]
 
 # Shape parameters.
 s1 = 1  # in y
-s2 = 6  # in xi
+s2 = 5  # in xi
 
 # Densities.
-ydensity = 1
-xidensity = 6
+ydensity = 200
+xidensity = 1000
 xdensity = 1
 resolution = None
 

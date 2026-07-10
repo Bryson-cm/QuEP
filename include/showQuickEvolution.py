@@ -111,42 +111,42 @@ def plot(x_f,y_f,xi_f,z_f,px_f,py_f,pz_f, t0, sim_name,shape_name,x_s,noElec,ite
 
 
     # Plot slices
-    fig5, axs = plt.subplots(3, sharex=True, sharey=True, figsize=(8, 10), dpi=80)
-    fig5.suptitle("Progression of " + shape_name + " EProbe")
+    # fig5, axs = plt.subplots(3, sharex=True, sharey=True, figsize=(8, 10), dpi=80)
+    # fig5.suptitle("Progression of " + shape_name + " EProbe")
 
-    for i in range(0, 3):
-        axs[i].set_title("Low Density Probe, X = " + str(x_s[i]) + " mm")
-        #axs[i].hist2d(xislice[i,:], yslice[i,:], bins=(50,50), cmap=plt.cm.jet)
-        axs[i].scatter(xislice[i,:], yslice[i,:], c='C0', zorder=1)
-        axs[i].set_xlim(27,52)
-        axs[i].set_ylim(-12,12)
-    #for ax in axs.flat:
-        #ax.set(xlabel = '$\\xi$ ($c/\omega_p$)', ylabel = 'Y ($c/\omega_p$)')
-        #ax.label_outer()
-        axs[2].set(xlabel = r'$\xi$ ($c/\omega_p$)', ylabel = r'Y ($c/\omega_p$)')
+    # for i in range(0, 3):
+    #     axs[i].set_title("Low Density Probe, X = " + str(x_s[i]) + " mm")
+    #     #axs[i].hist2d(xislice[i,:], yslice[i,:], bins=(50,50), cmap=plt.cm.jet)
+    #     axs[i].scatter(xislice[i,:], yslice[i,:], c='C0', zorder=1)
+    #     axs[i].set_xlim(27,52)
+    #     axs[i].set_ylim(-12,12)
+    # #for ax in axs.flat:
+    #     #ax.set(xlabel = '$\\xi$ ($c/\omega_p$)', ylabel = 'Y ($c/\omega_p$)')
+    #     #ax.label_outer()
+    #     axs[2].set(xlabel = r'$\xi$ ($c/\omega_p$)', ylabel = r'Y ($c/\omega_p$)')
 
-    fig6, axs2 = plt.subplots(3, sharey=True, figsize=(8, 10), dpi=80)
-    fig6.suptitle("Progression of " + shape_name + " EProbe")
+    # fig6, axs2 = plt.subplots(3, sharey=True, figsize=(8, 10), dpi=80)
+    # fig6.suptitle("Progression of " + shape_name + " EProbe")
 
-    for i in range(0, 3):
-        axs2[i].set_title("Low Density Probe, X = " + str(x_s[i+3]) + " mm")
-        #axs2[i].hist2d(xislice[i+3,:], yslice[i+3,:], bins=(50,50), cmap=plt.cm.jet)
-        axs2[i].scatter(xislice[i+3,:], yslice[i+3,:], c='C0', zorder=1)
-        #axs2[i].set_ylim(-2,2)
-    #for ax in axs2.flat:
-        #ax.set(xlabel = '$\\xi$ ($c/\omega_p$)', ylabel = 'Y ($c/\omega_p$)')
-        #ax.label_outer()
-        axs2[2].set(xlabel = r'$\xi$ ($c/\omega_p$)', ylabel = r'Y ($c/\omega_p$)')
+    # for i in range(0, 3):
+    #     axs2[i].set_title("Low Density Probe, X = " + str(x_s[i+3]) + " mm")
+    #     #axs2[i].hist2d(xislice[i+3,:], yslice[i+3,:], bins=(50,50), cmap=plt.cm.jet)
+    #     axs2[i].scatter(xislice[i+3,:], yslice[i+3,:], c='C0', zorder=1)
+    #     #axs2[i].set_ylim(-2,2)
+    # #for ax in axs2.flat:
+    #     #ax.set(xlabel = '$\\xi$ ($c/\omega_p$)', ylabel = 'Y ($c/\omega_p$)')
+    #     #ax.label_outer()
+    #     axs2[2].set(xlabel = r'$\xi$ ($c/\omega_p$)', ylabel = r'Y ($c/\omega_p$)')
 
-    fig7, axs3 = plt.subplots(3, sharex=True, sharey=True, figsize=(8, 10), dpi=80)
-    fig7.suptitle("Progression of " + shape_name + " EProbe")
+    # fig7, axs3 = plt.subplots(3, sharex=True, sharey=True, figsize=(8, 10), dpi=80)
+    # fig7.suptitle("Progression of " + shape_name + " EProbe")
 
-    for i in range(0, 3):
-        axs3[i].set_title("Low Density Probe, X = " + str(x_s[i]) + " mm")
-        axs3[i].scatter(zslice[i,:], yslice[i,:], zorder=2)
-        #axs3[i].set_ylim(-1,1)
-        #axs3[i].set_xlim(35,40)
-    axs3[2].set(xlabel = r'Z ($c/\omega_p$)', ylabel = r'Y ($c/\omega_p$)')
+    # for i in range(0, 3):
+    #     axs3[i].set_title("Low Density Probe, X = " + str(x_s[i]) + " mm")
+    #     axs3[i].scatter(zslice[i,:], yslice[i,:], zorder=2)
+    #     #axs3[i].set_ylim(-1,1)
+    #     #axs3[i].set_xlim(35,40)
+    # axs3[2].set(xlabel = r'Z ($c/\omega_p$)', ylabel = r'Y ($c/\omega_p$)')
 
     #####################################################################################
 
@@ -195,13 +195,12 @@ def plot(x_f,y_f,xi_f,z_f,px_f,py_f,pz_f, t0, sim_name,shape_name,x_s,noElec,ite
     secax = axs5.secondary_xaxis('top', functions= (returnXi, returnZ))
     secax.set(xlabel= r'$\xi$ ($c/\omega_p$)')
 
-    #fig9.show()
-    #fig5.show()
-    #fig.tight_layout()
-    #fig6.show()
-    #fig7.show()
+    # fig9.show()
+    # fig5.show()
+    # #fig.tight_layout()
+    # fig6.show()
+    # fig7.show()
     fig8.savefig(fig_name +'_quickevolutions.png')
     print(f"Progression of {shape_name} EProbe" + f" saved to {fig_name}_quickevolutions.png")
-    print("Press enter to end Quick Evolution 'plot' Module")
-    input()
+    
     

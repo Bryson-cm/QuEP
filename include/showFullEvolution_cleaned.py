@@ -47,8 +47,8 @@ USE_JET = True
 # Histogram / axis settings.
 BINS_Z = 1250
 BINS_Y = 400
-Z_LIMITS = (41.5, 47)
-Y_LIMITS = (-2, 2)  # Default y-axis limits for all plots
+Z_LIMITS = (39.2,50)
+Y_LIMITS = (-1.5, 1.5)
 VMAX = 10
 
 # Each tuple is: (screen indices, output suffix, y-axis limits, y-bins scale)
@@ -273,6 +273,7 @@ def make_evolution_plot(
     fig.suptitle(f"Progression of {shape_name} EProbe")
 
     hist = None
+    
     for ax, screen_idx in zip(axs, screen_indices):
         hist = ax.hist2d(
             zslice[screen_idx, :],

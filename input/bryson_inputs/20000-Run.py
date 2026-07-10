@@ -8,7 +8,7 @@ iterations = 40000
 # mode 0 is the wakefield, mode 1 is the laser, mode -1 is both.
 mode = -1
 
-fname = "test.npz"
+fname = "20000-Run.npz"
 
 debugmode = False
 

@@ -160,8 +160,8 @@ if __name__ == '__main__':
         noObj = len(x_0) # Number of particles in the simulation (2D Projection)
 
         # WEIGHTING IMPORTS/SAVING
-        rand = "{:02d}".format(randint(0,99))
-        weights_fname = fname[:-4] + "-weights-" + rand
+        # rand = "{:02d}".format(randint(0,99))
+        # weights_fname = fname[:-4] + "-weights-" + rand
         #weights_fname = fname + "-weights" 
         #if (skipWeightingCalc):
             #data = np.load('./data/' + weights_fname + '.npz') # Change this line as needed
@@ -169,7 +169,7 @@ if __name__ == '__main__':
            # print(f"\nUsing weights from {'./data/' + weights_fname + '.npz'}...\n")
         #else:
             # Create weighting array with appropriate masks
-           # w = []
+            # w = []
            # w = [1 for k in range(0,noObj)] #Creates default array of weights with length noObj, each with value 1
             
            # start_time_w = time.time()
@@ -193,11 +193,40 @@ if __name__ == '__main__':
 
         ##############################################################################################################
         # Plot data points
+        rand = "{:02d}".format(randint(0,99))
+        weights_fname = fname[:-4] + "-weights-" + rand
+
+        if (skipWeightingCalc):
+            # data = np.load('./data/' + weights_fname + '.npz') # Change this line as needed
+            # w = data['w']
+            print(f"\nUsing weights from {'./data/' + weights_fname + '.npz'}...\n")
+        else:
+            # Create weighting array with appropriate masks
+           w = []
+           w = [1 for k in range(0,noObj)] #Creates default array of weights with length noObj, each with value 1
+            
+        start_time_w = time.time()
+        t_w = time.localtime()
+        curr_time_w = time.strftime("%H:%M:%S", t_w)
+        print("\nWeighting calculations - START TIME: ", curr_time_w)
+
+            # Call weighting function getWeights 
+            # Note: w_virt, xv, yv, xiv, only used for debugging purposes
+        if (useWeights_x or useWeights_y or useWeights_xi or useMasks_x or useMasks_xi or useMasks_y):
+            import include.weighting_masks_function as weightmaskFunc
+            w, w_export1, w_y, w_xi = weightmaskFunc.getWeights(beamx_c,beamy_c,beamxi_c,x_c,y_c,xi_c,s1,s2,xden,yden,xiden,res,sigma_x,sigma_y,sigma_xi,noObj,t0,useWeights_x,useWeights_y,useWeights_xi,useMasks_x,useMasks_xi,useMasks_y)    
+            
+            t_w_end = time.localtime()
+            curr_time_w_end = time.strftime("%H:%M:%S", t_w_end)
+            print("Weighting calculations - END TIME: ", curr_time_w_end)
+            print("Weighting calculations - DURATION: ", (time.time() - start_time_w)/60, " min\n")
+
+        if (saveWeights):
+            np.savez(weights_fname, w=w)
+            print(f"\nWeights saved to {weights_fname + '.npz'}\n") #Saves weights for reuse
+
+
         print("Plotting...\n")
-
-
-
-
 
         ##############################################################################################################
         #Plot Quick Evolution. The Evolution figure will save as a png file. The Quick Evolution file is for the personal computor to examine the size and evolution of
@@ -209,17 +238,17 @@ if __name__ == '__main__':
         ##############################################################################################################
 
         if (showFullEvolution):
-            import include.showFullEvolution as showEvol_F
-            showEvol_F.plot(x_f, y_f, xi_f, z_f, px_f, py_f, pz_f, w, sim_name, shape_name, noObj, iter)
+            import include.showFullEvolution_cleaned as showEvol_F
+            showEvol_F.plot(x_f, y_f, xi_f, z_f, px_f, py_f, pz_f, t0, w, sim_name, shape_name, noObj, iter, fig_name)
             print("Moving to next module\n")
         ##############################################################################################################
  
         if (makeFullAnimation):
-            import include.makeFullAnimation as makeFullAni
-            import include.movieWriter as movieWriter
+            import include.makeFullAnimation_cleaned as makeFullAni
+            import include.movieWriter_cleaned as movieWriter
             #Prepare plotting variables
             plasma_bnds, slices, xs_norm, yslice, zslice, bin_edges_z, bin_edges_y, cmap, cmin, vmin_, vmax_, zmin, zmax, ymin, ymax, fps, new_path, screen_dists = makeFullAni.prepare(sim_name, shape_name, noObj, rand)
-            print("Moving to next module\n")
+            print("Begining makeFullAnimation module...")
             
             # Multiprocessing: propagate to each screen and create frame
             start_time_pfc = time.time()

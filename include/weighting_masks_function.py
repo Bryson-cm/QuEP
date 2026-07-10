@@ -4,7 +4,7 @@ import sys
 import math
 import numpy as np
 import pdb
-import progressbar
+# import progressbar
 import time
 
 # Creates weights based on distribution and inputted masks (below)
@@ -72,8 +72,8 @@ def getWeights(beamx_c,beamy_c,beamxi_c,x_c,y_c,xi_c,s1,s2,xdensity,ydensity,xid
 
 def xiMasks(xi_0, w_xi):
     # Define masks in xi direction. Change if different mask is desired
-    left_of_masks = [-8,-12.5,-10.1]  # left most limit of each mask in order, on inital xi position
-    right_of_masks = [-7,-12.0,-10.0]  # right most limit of each mask in order, on initial xi position
+    left_of_masks = [-20,-7]# left most limit of each mask in order, on inital xi position
+    right_of_masks = [-8,20]#ht most limit of each mask in order, on initial xi position
 
     # Apply masks to w_xi
     for g in range(0,len(left_of_masks)):
@@ -82,12 +82,36 @@ def xiMasks(xi_0, w_xi):
     return w_xi
 
 def yMasks(y_0, w_y):
-    # Define masks in y direction, 0 is 0 on the y-axis. Change if different mask is desired
-    top_of_masks = [0]  #upper limit of each mask in order, on inital y position
-    bot_of_masks = [-10]  #lower limit of each mask in order, on inital y position
+    """
+    Apply two horizontal masks in y.
 
-    # Apply masks to w_y
-    for h in range(0,len(top_of_masks)):
-        w_y = np.where(np.logical_and(y_0 > bot_of_masks[h], y_0 < top_of_masks[h]), 0, w_y)
+    You specify:
+        bottom_mask_top      = top edge of the lower mask
+        distance_between     = open gap between the two masks
+        mask_height          = thickness of each mask
+    """
+
+    bottom_mask_top = 0.1 #top of the bottom mask
+    distance_between = 0.1 #gap between bottom mask and top mask
+    mask_height = 10          # thickness of each mask
+
+    # Bottom mask
+    bottom_mask_bot = bottom_mask_top - mask_height
+    bottom_mask_condition = np.logical_and(
+        y_0 > bottom_mask_bot,
+        y_0 < bottom_mask_top
+    )
+
+    # Top mask
+    top_mask_bot = bottom_mask_top + distance_between
+    top_mask_top = top_mask_bot + mask_height
+    top_mask_condition = np.logical_and(
+        y_0 > top_mask_bot,
+        y_0 < top_mask_top
+    )
+
+    # Apply both masks
+    w_y = np.where(bottom_mask_condition, 0, w_y)
+    w_y = np.where(top_mask_condition, 0, w_y)
 
     return w_y

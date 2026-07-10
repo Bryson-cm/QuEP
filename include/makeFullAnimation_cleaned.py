@@ -16,7 +16,8 @@ No axis_offset variable is used, and index-mp.py does not need to change.
 import copy
 import os
 import time
-
+import sys
+import importlib
 import matplotlib as mpl
 mpl.use("Agg")  # Non-interactive backend for scripts / HPC jobs
 import matplotlib.pyplot as plt
@@ -43,29 +44,31 @@ USE_JET = True
 # Animation screen locations in mm.
 # np.linspace(xstart_mm, xend_mm, number_of_frames) is used below.
 XSTART_MM = 0.0
-XEND_MM = 50.0
-NUMBER_OF_FRAMES = 100
+XEND_MM = 150.0
+NUMBER_OF_FRAMES = 1000
 
 # Z/Y plot limits in normalized units c/omega_p.
 # These are set to match the style/range used in showFullEvolution_cleaned.py.
 # Change these if your run is centered somewhere else.
-Z_LIMITS = (42.5, 47.0)
-Y_LIMITS = (-2, 2)
+Z_LIMITS = (44,45.2)
+Y_LIMITS = (-1.5, 1.5)
 
 # Histogram bin spacing in normalized units c/omega_p.
-BIN_RESOLUTION_Z = 0.025
-BIN_RESOLUTION_Y = 0.025
+BIN_RESOLUTION_Z = 0.012
+BIN_RESOLUTION_Y = 0.012
 
 CMIN = 1
-VMIN = CMIN
+VMIN = 0
 VMAX = 10
-FPS = 2
+FPS = 20
 
 # Stored in prepare() and also attached to cmap so multiprocessing workers
 # can recover the same t0 without changing index-mp.py unpacking/call signatures.
 _T0_FOR_SECONDARY_AXIS = None
 _FACECOLOR = "white"
 
+_MIN_X_MM = None
+_MIN_WIDTH = None
 
 # -----------------------------------------------------------------------------
 # Coordinate helpers: same method as showFullEvolution_cleaned.py
@@ -126,7 +129,65 @@ def getBallisticTraj(x_0, y_0, z_0, px, py, pz, x_screen):
     z_screen = z_0 + dx * (pz / px_safe)
     return y_screen, z_screen
 
+def get_beam_width(y_plot, weights):
+    """
+    Return full beam width using only unmasked particles.
 
+    Masked particles have weight = 0, so they are ignored.
+    Full width = max(y) - min(y)
+    """
+    y_plot = np.asarray(y_plot, dtype=float)
+    weights = np.asarray(weights, dtype=float)
+
+    good = (
+        np.isfinite(y_plot)
+        & np.isfinite(weights)
+        & (weights > 0)
+    )
+
+    if np.sum(good) == 0:
+        return np.nan
+
+    y_good = y_plot[good]
+
+    return np.max(y_good) - np.min(y_good)
+def calculate_min_width_once(
+    x_f,
+    y_f,
+    z_f,
+    px_f,
+    py_f,
+    pz_f,
+    w,
+    plasma_bnds,
+    xs_norm,
+    screen_dists,
+):
+    """
+    Calculate the minimum beam width once before making frames.
+    """
+
+    min_width = np.inf
+    min_x = np.nan
+
+    for i in range(len(xs_norm)):
+
+        if abs(xs_norm[i]) > plasma_bnds[2]:
+            y_plot, z_plot = getBallisticTraj(
+                x_f, y_f, z_f,
+                px_f, py_f, pz_f,
+                xs_norm[i],
+            )
+        else:
+            y_plot = y_f
+
+        width = get_beam_width(y_plot, w)
+
+        if width < min_width:
+            min_width = width
+            min_x = screen_dists[i]
+
+    return min_x, min_width
 # -----------------------------------------------------------------------------
 # Plot setup helpers
 # -----------------------------------------------------------------------------
@@ -183,7 +244,12 @@ def prepare(sim_name, shape_name, noObj, rand):
     """Prepare shared plotting parameters for animation frame generation."""
     global _T0_FOR_SECONDARY_AXIS, _FACECOLOR
 
+
+
     sim = get_simulation_module(sim_name)
+    input_module = str(sys.argv[1])
+    init = importlib.import_module(input_module)
+    sim.configure(init)
 
     t0 = sim.getTime()
     plasma_frequency = sim.getPlasFreq()
@@ -283,6 +349,27 @@ def plotmp(
         y_plot = y_f
         z_plot = z_f
 
+    beam_width = get_beam_width(y_plot,w)
+     
+    global _MIN_X_MM, _MIN_WIDTH
+
+    if _MIN_X_MM is None:
+        _MIN_X_MM, _MIN_WIDTH = calculate_min_width_once(
+            x_f,
+            y_f,
+            z_f,
+            px_f,
+            py_f,
+            pz_f,
+            w,
+            plasma_bnds,
+            xs_norm,
+            screen_dists,
+        )
+
+    min_x_mm = _MIN_X_MM    
+    min_width = _MIN_WIDTH
+
     h = ax.hist2d(
         z_plot[:],
         y_plot[:],
@@ -294,15 +381,34 @@ def plotmp(
         cmin=cmin,
     )
 
+    # ax.text(
+    #     zmin + 0.02 * (zmax - zmin),
+    #     ymax - 0.20 * (ymax - ymin),
+    #     f"x = {screen_dists[i]:.4f} mm",
+    #     horizontalalignment="left",
+    #     fontsize=10,
+    #     color="black",
+    # )
+
+    # ax.text(
+    #     zmin + 0.02 * (zmax - zmin),
+    #     ymax - 0.32 * (ymax - ymin),
+    #     f"beam width = {beam_width:.4f}",
+    #     horizontalalignment="left",
+    #     fontsize=10,
+    #     color="black",
+    # )
     ax.text(
         zmin + 0.02 * (zmax - zmin),
         ymax - 0.20 * (ymax - ymin),
-        f"x = {screen_dists[i]:.1f} mm",
+        f"x = {screen_dists[i]:.4f} mm\n"
+        f"beam width = {beam_width:.4f}\n"
+        f"minimum x = {min_x_mm:.4f} mm",
         horizontalalignment="left",
         fontsize=10,
         color="black",
+        bbox=dict(facecolor="white", alpha=0.7, edgecolor="none"),
     )
-
     # Recover t0 using the same lambda method as showFullEvolution_cleaned.py,
     # without changing the existing plotmp() call in index-mp.py.
     t0_for_axis = getattr(cmap, "_quep_t0", _T0_FOR_SECONDARY_AXIS)

@@ -27,9 +27,9 @@ debugmode = True
 # Probe centered at the following initial coordinates (in c/w_p):
 #See figure 3.1 in Evan Trommer's thesis. The goal is to put the electron in line with the peak of the second bump of the field
 #so while xi_c here is fairly fixed y_c can be any range of values still within the bubble
-x_c = 1 #
-y_c = 0.5 #
-xi_c = -7
+x_c = -1 #
+y_c = 0.0 #
+xi_c = -7.3
 
 # Initial momentum
 #set initial transverse momentum to zero and pz_0=20 (or any other number)

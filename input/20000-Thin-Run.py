@@ -8,13 +8,13 @@ iterations = 40000
 # mode 0 is the wakefield, mode 1 is the laser, mode -1 is both.
 mode = -1
 
-fname = "test.npz"
+fname = "20000-Thin-Run.npz"
 
 debugmode = False
 
 # Probe centered at the following initial coordinates, in c/omega_p.
 x_c = -1
-y_c = 0.09
+y_c = 0
 xi_c = -7.3
 
 # Initial momentum.
@@ -26,12 +26,12 @@ pz_0 = 0
 x_s = [10, 25, 50, 75, 100,]
 
 # Shape parameters.
-s1 = 0.025  # in y
-s2 = 1  # in xi
+s1 = 0.5    # in y
+s2 = 0.25  # xi
 
 # Densities.
-ydensity = 4
-xidensity =6
+ydensity = 200
+xidensity = 100
 xdensity = 1
 resolution = None
 
